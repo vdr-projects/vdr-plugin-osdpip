@@ -4,62 +4,59 @@
  * See the README file for copyright information and how to reach the author.
  */
 
+#include <vdr/config.h>
+
 #include "config.h"
 
-#if MAXNUMCOLORS < 256
-#	warning WARNING: YOU WILL NOT BE ABLE TO USE 256 COLOR PIP
-#endif
-
-#ifndef VDR_OSDPIP_PATCHED
-# warning WARNING: YOU WILL NOT BE ABLE TO USE VARIABLE COLOR PIP
-#endif
-
-#if MAXNUMCOLORS < 256
-const int kColorDepths = 1;
-#else
-# ifndef VDR_OSDPIP_PATCHED
-const int kColorDepths = 3;
-# else
-const int kColorDepths = 4;
+#if VDRVERSNUM < 10307
+# if MAXNUMCOLORS < 256
+#  warning WARNING: YOU WILL NOT BE ABLE TO USE 256 COLOR PIP
 # endif
+
+# ifndef VDR_OSDPIP_PATCHED
+#  warning WARNING: YOU WILL NOT BE ABLE TO USE VARIABLE COLOR PIP
+# endif
+
+# if MAXNUMCOLORS < 256
+const int kColorDepths = 1;
+# else
+#  ifndef VDR_OSDPIP_PATCHED
+const int kColorDepths = 3;
+#  else
+const int kColorDepths = 4;
+#  endif
+# endif
+#else
+const int kColorDepths = 4;
 #endif
 
 const int kSizes = 6;
 const int kFrameModes = 3;
 const int kInfoPositions = 4;
 
-const char *ColorDepthItems[] = {
-	"Greyscale (16)",
-	"Greyscale (128)",
-	"Color (256, fixed)",
-	"Color (128, variable)"
-};
+const char * ColorDepthItems[] = {NULL, NULL, NULL, NULL, NULL};   // initialized later
+const char * InfoPositionItems[] = {NULL, NULL, NULL, NULL, NULL}; // initialized later
 
-const char *SizeItems[] = {
+const char * SizeItems[] = {
 	"120x96",
 	"160x128",
 	"200x160",
 	"240x192",
 	"280x224",
-	"320x256"
+	"320x256",
+	NULL
 };
 
-const char *FrameModeItems[] = {
-	"I-Frames",
-	"I-, P-Frames",
-	"I-, P-, B-Frames"
-};
-
-const char *InfoPositionItems[] = {
-	"top left",
-	"top right",
-	"bottom left",
-	"bottom right"
+const char * FrameModeItems[] = {
+	"I",
+	"I, P",
+	"I, P, B"
 };
 
 cOsdPipSetup OsdPipSetup;
 
-cOsdPipSetup::cOsdPipSetup(void) {
+cOsdPipSetup::cOsdPipSetup(void)
+{
 	XPosition  = 50;
 	YPosition  = 50;
 	CropLeft   = 5;
@@ -76,7 +73,8 @@ cOsdPipSetup::cOsdPipSetup(void) {
 	InfoPosition = kInfoBottomLeft;
 }
 
-bool cOsdPipSetup::SetupParse(const char *Name, const char *Value) {
+bool cOsdPipSetup::SetupParse(const char *Name, const char *Value)
+{
 	if      (strcmp(Name, "XPosition")    == 0) XPosition    = atoi(Value);
 	else if (strcmp(Name, "YPosition")    == 0) YPosition    = atoi(Value);
 	else if (strcmp(Name, "CropLeft")     == 0) CropLeft     = atoi(Value);
@@ -95,48 +93,57 @@ bool cOsdPipSetup::SetupParse(const char *Name, const char *Value) {
 	return true;
 }
 
-cOsdPipSetupPage::cOsdPipSetupPage(void) {
+cOsdPipSetupPage::cOsdPipSetupPage(void)
+{
 	m_NewOsdPipSetup = OsdPipSetup;
 
+	ColorDepthItems[0] = tr("Greyscale (16)");
+	ColorDepthItems[1] = tr("Greyscale (256)");
+	ColorDepthItems[2] = tr("Color (256, fixed)");
+	ColorDepthItems[3] = tr("Color (128, variable)");
+
+	InfoPositionItems[0] = tr("top left");
+	InfoPositionItems[1] = tr("top right");
+	InfoPositionItems[2] = tr("bottom left");
+	InfoPositionItems[3] = tr("bottom right");
+
+	Add(new cMenuEditIntItem(tr("X Position"), &m_NewOsdPipSetup.XPosition, 0, 600));
+	Add(new cMenuEditIntItem(tr("Y Position"), &m_NewOsdPipSetup.YPosition, 0, 470));
 	Add(new cMenuEditIntItem(tr("Crop left"), &m_NewOsdPipSetup.CropLeft, 0, 80));
-	Add(new cMenuEditIntItem(tr("Crop right"), &m_NewOsdPipSetup.CropRight, 0, 
-			80));
-	Add(new cMenuEditIntItem(tr("Crop at top"), &m_NewOsdPipSetup.CropTop, 0, 
-			80));
-	Add(new cMenuEditIntItem(tr("Crop at bottom"), &m_NewOsdPipSetup.CropBottom, 
-			0, 80));
-	Add(new cMenuEditStraItem(tr("Color depth"),
-			&m_NewOsdPipSetup.ColorDepth, kColorDepths, ColorDepthItems));
-	Add(new cMenuEditStraItem(tr("Size"),
-			&m_NewOsdPipSetup.Size, kSizes, SizeItems));
-	Add(new cMenuEditStraItem(tr("Frames to display"),
-			&m_NewOsdPipSetup.FrameMode, kFrameModes, FrameModeItems));
+	Add(new cMenuEditIntItem(tr("Crop right"), &m_NewOsdPipSetup.CropRight, 0, 80));
+	Add(new cMenuEditIntItem(tr("Crop at top"), &m_NewOsdPipSetup.CropTop, 0, 80));
+	Add(new cMenuEditIntItem(tr("Crop at bottom"), &m_NewOsdPipSetup.CropBottom, 0, 80));
+	Add(new cMenuEditStraItem(tr("Color depth"), &m_NewOsdPipSetup.ColorDepth, kColorDepths, ColorDepthItems));
+	Add(new cMenuEditStraItem(tr("Size"), &m_NewOsdPipSetup.Size, kSizes, SizeItems));
+	Add(new cMenuEditStraItem(tr("Frames to display"), &m_NewOsdPipSetup.FrameMode, kFrameModes, FrameModeItems));
 	Add(new cMenuEditIntItem(tr("Drop frames"), &m_NewOsdPipSetup.FrameDrop, 0, 2));
 	Add(new cMenuEditBoolItem(tr("Swap FFMPEG output"), &m_NewOsdPipSetup.SwapFfmpeg));
 	Add(new cMenuEditBoolItem(tr("Show info window"), &m_NewOsdPipSetup.ShowInfo));
 	Add(new cMenuEditIntItem(tr("Info window width"), &m_NewOsdPipSetup.InfoWidth, 200, 600));
-	Add(new cMenuEditStraItem(tr("Info window position"),
-			&m_NewOsdPipSetup.InfoPosition, kInfoPositions, InfoPositionItems));
+	Add(new cMenuEditStraItem(tr("Info window position"), &m_NewOsdPipSetup.InfoPosition, kInfoPositions, InfoPositionItems));
 }
 
-cOsdPipSetupPage::~cOsdPipSetupPage() {
+cOsdPipSetupPage::~cOsdPipSetupPage()
+{
 }
 
-void cOsdPipSetupPage::Store(void) {
+void cOsdPipSetupPage::Store(void)
+{
 	OsdPipSetup = m_NewOsdPipSetup;
 
-	SetupStore("XPosition",    OsdPipSetup.XPosition);
-	SetupStore("YPosition",    OsdPipSetup.YPosition);
-	SetupStore("CropLeft",     OsdPipSetup.CropLeft);
-	SetupStore("CropRight",    OsdPipSetup.CropRight);
-	SetupStore("CropTop",      OsdPipSetup.CropTop);
-	SetupStore("CropBottom",   OsdPipSetup.CropBottom);
-	SetupStore("ColorDepth",   OsdPipSetup.ColorDepth);
-	SetupStore("Size",         OsdPipSetup.Size);
-	SetupStore("FrameMode",    OsdPipSetup.FrameMode);
-	SetupStore("FrameDrop",    OsdPipSetup.FrameDrop);
-	SetupStore("SwapFfmpeg",   OsdPipSetup.SwapFfmpeg);
-	SetupStore("ShowInfo",     OsdPipSetup.ShowInfo);
-	SetupStore("InfoWidth",    OsdPipSetup.InfoWidth);
+	SetupStore("XPosition", OsdPipSetup.XPosition);
+	SetupStore("YPosition", OsdPipSetup.YPosition);
+	SetupStore("CropLeft", OsdPipSetup.CropLeft);
+	SetupStore("CropRight", OsdPipSetup.CropRight);
+	SetupStore("CropTop", OsdPipSetup.CropTop);
+	SetupStore("CropBottom", OsdPipSetup.CropBottom);
+	SetupStore("ColorDepth", OsdPipSetup.ColorDepth);
+	SetupStore("Size", OsdPipSetup.Size);
+	SetupStore("FrameMode", OsdPipSetup.FrameMode);
+	SetupStore("FrameDrop", OsdPipSetup.FrameDrop);
+	SetupStore("SwapFfmpeg", OsdPipSetup.SwapFfmpeg);
+	SetupStore("ShowInfo", OsdPipSetup.ShowInfo);
+	SetupStore("InfoWidth", OsdPipSetup.InfoWidth);
 	SetupStore("InfoPosition", OsdPipSetup.InfoPosition);
 }
+

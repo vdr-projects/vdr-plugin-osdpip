@@ -1,3 +1,6 @@
 - improve fixed palette color quantization
 - localization
 - vdr-like navigation through channels
+- support other aspect ratios than 4:3
+- automatic frame drop
+

@@ -12,21 +12,24 @@
 #include <vdr/ringbuffer.h>
 
 cOsdPipReceiver::cOsdPipReceiver(const cChannel *Channel, 
-		cRingBufferFrame *ESBuffer):
-		cReceiver(Channel->Ca(), 0, 2, Channel->Vpid(), Channel->Apid1()) {
+	cRingBufferFrame *ESBuffer):
+	cReceiver(Channel->Ca(), 0, 2, Channel->Vpid(), Channel->Apid1())
+{
 	m_TSBuffer = new cRingBufferLinear(MEGABYTE(3), TS_SIZE * 2, true);
 	m_ESBuffer = ESBuffer;
 	m_Remux = new cRemux(Channel->Vpid(), Channel->Apid1(), 0, 0, 0, true);
 	m_Active = false;
 }
 
-cOsdPipReceiver::~cOsdPipReceiver() {
+cOsdPipReceiver::~cOsdPipReceiver()
+{
 	Detach();
 	delete m_Remux;
 	delete m_TSBuffer;
 }
 
-void cOsdPipReceiver::Activate(bool On) {
+void cOsdPipReceiver::Activate(bool On)
+{
 	if (On)
 		Start();
 	else if (m_Active) {
@@ -35,13 +38,15 @@ void cOsdPipReceiver::Activate(bool On) {
 	}
 }
 
-void cOsdPipReceiver::Receive(uchar *Data, int Length) {
+void cOsdPipReceiver::Receive(uchar *Data, int Length)
+{
 	int put = m_TSBuffer->Put(Data, Length);
 	if (put != Length)
 		esyslog("osdpip: ringbuffer overflow (%d bytes dropped)", Length - put);
 }
 
-void cOsdPipReceiver::Action(void) {
+void cOsdPipReceiver::Action(void)
+{
  	dsyslog("osdpip: receiver thread started (pid=%d)", getpid());
 
 	m_Active = true;
@@ -51,7 +56,7 @@ void cOsdPipReceiver::Action(void) {
 	unsigned char VideoBuffer[200000];
 	int VideoBufferPos = 0;
 
-  while (m_Active) {
+	while (m_Active) {
 		int r;
 		const uchar *b = m_TSBuffer->Get(r);
 		if (b) {
@@ -77,5 +82,6 @@ void cOsdPipReceiver::Action(void) {
 	 		usleep(1); // this keeps the CPU load low
 	}
 
-  dsyslog("osdpip: receiver thread ended (pid=%d)", getpid());
+	dsyslog("osdpip: receiver thread ended (pid=%d)", getpid());
 }
+

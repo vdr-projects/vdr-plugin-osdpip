@@ -5,6 +5,7 @@
  */
 
 #include "osd.h"
+#include "decoder.h"
 #include "quantize.h"
 #include "receiver.h"
 #include "config.h"
@@ -12,21 +13,27 @@
 #include <vdr/ringbuffer.h>
 #include <vdr/remux.h>
 
-cOsdPipObject::cOsdPipObject(cDevice *Device, const cChannel *Channel):
-		cOsdObject(true) {
+cOsdPipObject::cOsdPipObject(cDevice *Device, const cChannel *Channel)
+:	cOsdObject(true)
+{
 	m_Channel = Channel;
 	m_Osd = NULL;
 	m_ESBuffer = new cRingBufferFrame(MEGABYTE(3), true);
 
 	m_Active = false;
 	m_Ready = false;
+#if VDRVERSNUM >= 10307
+	m_Reset = true;
+#endif
 	m_Width = m_Height = -1;
 	m_Bitmap = NULL;
+	m_BitmapInfo = NULL;
 	m_ShowTime = 0;
 	m_ShowInfo = false;
 
 	m_AlphaBase = 0xFF000000;
-	memset(m_Palette, 0, 1024);
+	for (int i = 0; i < 256; i++)
+		m_Palette[i] = 0xFD000000 | i;
 	m_PaletteStart = 1;
 
 	Device->SwitchChannel(m_Channel, false);
@@ -34,8 +41,10 @@ cOsdPipObject::cOsdPipObject(cDevice *Device, const cChannel *Channel):
 	Device->AttachReceiver(m_Receiver);
 }
 
-cOsdPipObject::~cOsdPipObject() {
-	if (m_Active) {
+cOsdPipObject::~cOsdPipObject()
+{
+	if (m_Active)
+	{
 		m_Active = false;
 		Cancel(3);
 	}
@@ -43,85 +52,58 @@ cOsdPipObject::~cOsdPipObject() {
 	delete m_Receiver;
 	if (m_Bitmap != NULL)
 		delete m_Bitmap;
+	if (m_BitmapInfo != NULL)
+		delete m_BitmapInfo;
 	if (m_Osd != NULL)
 		delete m_Osd;
 }
 
-int cOsdPipObject::Decode(unsigned char * data, int length) {
-	int gotPicture, len;
-
-	len = avcodec_decode_video(m_Context, m_PicDecoded, &gotPicture, data, length);
-	if (len < 0)
-	{
-		printf("Error while decoding frame\n");
-		return -1;
-	}
-	if (!gotPicture)
-	{
-		return -1;
-	}
-
-	return 0;
-}
-
-int cOsdPipObject::Resample() {
-	ImgReSampleContext * contextResample;
-
-	contextResample = img_resample_full_init(m_Width, m_Height,
-			m_Context->width, m_Context->height,
-			OsdPipSetup.CropTop, OsdPipSetup.CropBottom,
-			OsdPipSetup.CropLeft, OsdPipSetup.CropRight);
-	if (!contextResample) {
-		printf("Error initializing resample context.\n");
-		return -1;
-	}
-	avpicture_fill((AVPicture *) m_PicResample, m_BufferResample,
-			PIX_FMT_YUV420P, m_Width, m_Height);
-	img_resample(contextResample, (AVPicture *) m_PicResample, (AVPicture *) m_PicDecoded);
-	img_resample_close(contextResample);
-
-	return 0;
-}
-
-int cOsdPipObject::ConvertToRGB() {
-	avpicture_fill((AVPicture *) m_PicConvert, m_BufferConvert,
-			PIX_FMT_RGBA32, m_Width, m_Height);
-	img_convert((AVPicture *) m_PicConvert, PIX_FMT_RGBA32,
-				(AVPicture *) m_PicResample, PIX_FMT_YUV420P,
-				m_Width, m_Height);
-
-	return 0;
-}
-
-void cOsdPipObject::ProcessImage(unsigned char * data, int length) {
+void cOsdPipObject::ProcessImage(unsigned char * data, int length)
+{
 	unsigned int value;
 	unsigned int * outputPalette;
 	unsigned char * outputImage;
 
-	if (OsdPipSetup.FrameMode == kFrameModeI) {
-		if (m_FrameDrop == OsdPipSetup.FrameDrop) {
+	if (OsdPipSetup.FrameMode == kFrameModeI)
+	{
+		if (m_FrameDrop == OsdPipSetup.FrameDrop)
+		{
 			m_FrameDrop = 0;
-		} else {
+		}
+		else
+		{
 			m_FrameDrop++;
 			return;
 		}
 	}
 
-	if (Decode(data, length) != 0)
+	if (decoder.Decode(data, length) != 0)
 		return;
 
 	if (OsdPipSetup.FrameMode == kFrameModeIP ||
-			OsdPipSetup.FrameMode == kFrameModeIPB) {
-		if (m_FrameDrop == OsdPipSetup.FrameDrop) {
+		OsdPipSetup.FrameMode == kFrameModeIPB)
+	{
+		if (m_FrameDrop == OsdPipSetup.FrameDrop)
+		{
 			m_FrameDrop = 0;
-		} else {
+		}
+		else
+		{
 			m_FrameDrop++;
 			return;
 		}
 	}
 
-	if (!m_Ready) {
-		switch (OsdPipSetup.Size) {
+	if (!m_Ready)
+	{
+#if VDRVERSNUM >= 10307
+		if (m_Bitmap != NULL)
+			delete m_Bitmap;
+		if (m_BitmapInfo != NULL)
+			delete m_BitmapInfo;
+#endif
+		switch (OsdPipSetup.Size)
+		{
 			case 0: m_Width = 120; m_Height = 96; break;
 			case 1: m_Width = 160; m_Height = 128; break;
 			case 2: m_Width = 200; m_Height = 160; break;
@@ -129,10 +111,76 @@ void cOsdPipObject::ProcessImage(unsigned char * data, int length) {
 			case 4: m_Width = 280; m_Height = 224; break;
 			case 5: m_Width = 320; m_Height = 256; break;
 		}
-		if (OsdPipSetup.ShowInfo) {
+#if VDRVERSNUM >= 10307
+		if (OsdPipSetup.ShowInfo)
+		{
+			switch (OsdPipSetup.InfoPosition)
+			{
+				case kInfoTopLeft:
+					m_InfoX = Setup.OSDLeft;
+					m_InfoY = Setup.OSDTop;
+					break;
+				case kInfoTopRight:
+					m_InfoX = Setup.OSDLeft + Setup.OSDWidth - OsdPipSetup.InfoWidth;
+					m_InfoY = Setup.OSDTop;
+					break;
+				case kInfoBottomLeft:
+					m_InfoX = Setup.OSDLeft;
+					m_InfoY = Setup.OSDTop + Setup.OSDHeight - 60;
+					break;
+				case kInfoBottomRight:
+					m_InfoX = Setup.OSDLeft + Setup.OSDWidth - OsdPipSetup.InfoWidth;
+					m_InfoY = Setup.OSDTop + Setup.OSDHeight - 60;
+					break;
+			}
+			tArea areas[] =
+			{
+				{ OsdPipSetup.XPosition, OsdPipSetup.YPosition, OsdPipSetup.XPosition + m_Width - 1, OsdPipSetup.YPosition + m_Height - 1, OsdPipSetup.ColorDepth == kDepthGrey16 ? 4 : 8 },
+				{ m_InfoX, m_InfoY, m_InfoX + OsdPipSetup.InfoWidth - 1, m_InfoY + 60 - 1, OsdPipSetup.ColorDepth == kDepthGrey16 ? 4 : 8 }
+			};
+			if (m_Osd->CanHandleAreas(areas, 2) == oeOk)
+				m_Osd->SetAreas(areas, 2);
+			else
+				m_Osd->SetAreas(areas, 1);
+			m_Bitmap = new cBitmap(m_Width, m_Height, OsdPipSetup.ColorDepth == kDepthGrey16 ? 4 : 8);
+			m_BitmapInfo = new cBitmap(OsdPipSetup.InfoWidth, 60, OsdPipSetup.ColorDepth == kDepthGrey16 ? 4 : 8);
+		}
+		else
+		{
+			tArea areas[] =
+			{
+				{ OsdPipSetup.XPosition, OsdPipSetup.YPosition, OsdPipSetup.XPosition + m_Width - 1, OsdPipSetup.YPosition + m_Height - 1, OsdPipSetup.ColorDepth == kDepthGrey16 ? 4 : 8 }
+			};
+			m_Osd->SetAreas(areas, 1);
+			m_Bitmap = new cBitmap(m_Width, m_Height, OsdPipSetup.ColorDepth == kDepthGrey16 ? 4 : 8);
+		}
+
+		if (OsdPipSetup.ColorDepth == kDepthGrey256)
+		{
+			for (int i = 0; i < 256; i++)
+				m_Palette[i] = m_AlphaBase | (i << 16) | (i << 8) | i;
+			m_Palette[0] = 0xFD000000;
+			m_Palette[255] = 0xFDFFFFFF;
+		}
+		if (OsdPipSetup.ColorDepth == kDepthColor256fix)
+		{
+			for (int i = 0; i < 252; i++)
+				m_Palette[i + 1] = m_AlphaBase | quantizer->OutputPalette()[i];
+			m_Palette[0] = 0xFD000000;
+			m_Palette[255] = 0xFDFFFFFF;
+		}
+		if (OsdPipSetup.ColorDepth == kDepthColor128var)
+		{
+			m_Palette[0] = 0xFD000000;
+			m_Palette[255] = 0xFDFFFFFF;
+		}
+#else
+		if (OsdPipSetup.ShowInfo)
+		{
 			int x = 0;
 			int y = 0;
-			switch (OsdPipSetup.InfoPosition) {
+			switch (OsdPipSetup.InfoPosition)
+			{
 				case kInfoTopLeft:
 					x = (720 - (Setup.OSDwidth * cOsd::CellWidth())) / 2;
 					y = (576 - (Setup.OSDheight * cOsd::LineHeight())) / 2;
@@ -150,92 +198,96 @@ void cOsdPipObject::ProcessImage(unsigned char * data, int length) {
 					y = (576 + (Setup.OSDheight * cOsd::LineHeight())) / 2 - 60;
 					break;
 			}
-			m_WindowInfo = m_Osd->Create(x, y, OsdPipSetup.InfoWidth, 60, 1, false, false);
-			m_BitmapInfo = new cBitmap(OsdPipSetup.InfoWidth, 60, 1, false);
-#ifdef VDR_OSDPIP_PATCHED
-			m_BitmapInfo->SetColor(0, (eDvbColor) 0xFF000000);
-			m_BitmapInfo->SetColor(1, (eDvbColor) 0xFFFFFFFF);
-#endif
-			ShowChannelInfo(Channels.GetByNumber(cDevice::ActualDevice()->CurrentChannel()));
+			m_WindowInfo = m_Osd->Create(x, y, OsdPipSetup.InfoWidth, 60, OsdPipSetup.ColorDepth == kDepthGrey16 ? 4 : 8, false, false);
+			m_BitmapInfo = new cBitmap(OsdPipSetup.InfoWidth, 60, OsdPipSetup.ColorDepth == kDepthGrey16 ? 4 : 8, false);
 		}
 		m_Window = m_Osd->Create(OsdPipSetup.XPosition, OsdPipSetup.YPosition, 
 			m_Width, m_Height, OsdPipSetup.ColorDepth == kDepthGrey16 ? 4 : 8, false);
 		m_Bitmap = new cBitmap(m_Width, m_Height,
 			OsdPipSetup.ColorDepth == kDepthGrey16 ? 4 : 8, false);
-		if (OsdPipSetup.ColorDepth == kDepthGrey128 ||
-				OsdPipSetup.ColorDepth == kDepthColor256fix) {
-#ifdef VDR_OSDPIP_PATCHED
-			m_PaletteLookup[0] = 16;
-			m_PaletteLookup[255] = 17;
-			for (int i = 1; i < 17; i++)
-				m_PaletteLookup[i] = i - 1;
-			for (int i = 17; i < 255; i++)
-				m_PaletteLookup[i] = i + 1;
-#else
+		if (OsdPipSetup.ColorDepth == kDepthGrey256 ||
+			OsdPipSetup.ColorDepth == kDepthColor256fix)
+		{
 			for (int i = 0; i < 256; i++)
-				m_PaletteLookup[i] = i;
-#endif
-			for (int i = 0; i < 256; i++) {
-				if (OsdPipSetup.ColorDepth == kDepthGrey128)
-					m_Palette[m_PaletteLookup[i]] = m_AlphaBase | (i << 16) | (i << 8) | i;
+			{
+				if (OsdPipSetup.ColorDepth == kDepthGrey256)
+					m_Palette[i] = m_AlphaBase | (i << 16) | (i << 8) | i;
 				else
-					m_Palette[m_PaletteLookup[i]] = m_AlphaBase | quantizer->OutputPalette()[i];
+					m_Palette[i] = m_AlphaBase | quantizer->OutputPalette()[i];
 			}
-#ifdef VDR_OSDPIP_PATCHED
 			for (int i = 0; i < 256; i++)
+			{
 				m_Bitmap->SetColor(i, (eDvbColor) m_Palette[i]);
+				m_BitmapInfo->SetColor(i, (eDvbColor) m_Palette[i]);
+			}
+		}
+		if (OsdPipSetup.ColorDepth == kDepthColor128var)
+		{
+			m_Palette[0] = 0xFF000000;
+			m_Palette[255] = 0xFFFFFFFF;
+		}
 #endif
-		}
-		if (OsdPipSetup.ColorDepth == kDepthColor128var) {
-			m_PaletteLookup[0] = 16;
-			m_PaletteLookup[255] = 17;
-			for (int i = 1; i < 17; i++)
-				m_PaletteLookup[i] = i - 1;
-			for (int i = 17; i < 255; i++)
-				m_PaletteLookup[i] = i + 1;
-			m_Palette[m_PaletteLookup[0]] = 0xFF000000;
-			m_Palette[m_PaletteLookup[255]] = 0xFFFFFFFF;
-		}
-		m_Ready = true;
 	}
 
-	if (Resample() != 0)
+	if (decoder.Resample(m_Width, m_Height) != 0)
 		return;
 
 	int size;
 	size = m_Width * m_Height;
 	
-	if (OsdPipSetup.ColorDepth == kDepthGrey16) {
-		outputImage = m_PicResample->data[0];
+	if (OsdPipSetup.ColorDepth == kDepthGrey16)
+	{
+#if VDRVERSNUM < 10307
 		m_Bitmap->Clear();
-		for (int y = 0; y < m_Height; y++) {
-			for (int x = 0; x < m_Width; x++) {
+#endif
+		outputImage = decoder.PicResample()->data[0];
+		for (int y = 0; y < m_Height; y++)
+		{
+			for (int x = 0; x < m_Width; x++)
+			{
 				value = outputImage[y * m_Width + x];
 				value = value / 16;
 				value = value * 16;
 				value = m_AlphaBase | (value << 16) | (value << 8) | value;
+#if VDRVERSNUM >= 10307
+				m_Bitmap->DrawPixel(x, y, value);
+#else
 				m_Bitmap->SetPixel(x, y, (eDvbColor) value);
+#endif
 			}
 		}
 	}
-	if (OsdPipSetup.ColorDepth == kDepthGrey128) {
-		outputImage = m_PicResample->data[0];
-//		m_Bitmap->Clear();
-		for (int y = 0; y < m_Height; y++) {
-			for (int x = 0; x < m_Width; x++) {
-				m_Bitmap->SetPixel(x, y, (eDvbColor) m_Palette[m_PaletteLookup[outputImage[y * m_Width + x] & 0xFE]]);
+	if (OsdPipSetup.ColorDepth == kDepthGrey256)
+	{
+		outputImage = decoder.PicResample()->data[0];
+#if VDRVERSNUM >= 10307
+		for (int i = 0; i < 256; i++)
+			m_Bitmap->SetColor(i, m_Palette[i]);
+#endif
+		for (int y = 0; y < m_Height; y++)
+		{
+			for (int x = 0; x < m_Width; x++)
+			{
+#if VDRVERSNUM >= 10307
+				m_Bitmap->SetIndex(x, y, outputImage[y * m_Width + x]);
+#else
+				m_Bitmap->SetPixel(x, y, (eDvbColor) m_Palette[outputImage[y * m_Width + x]]);
+#endif
 			}
 		}
 	}
 	if (OsdPipSetup.ColorDepth == kDepthColor256fix ||
-			OsdPipSetup.ColorDepth == kDepthColor128var) {
-		if (ConvertToRGB() != 0)
+		OsdPipSetup.ColorDepth == kDepthColor128var)
+	{
+		if (decoder.ConvertToRGB() != 0)
 			return;
 
-		if (OsdPipSetup.SwapFfmpeg) {
-			unsigned int * bufPtr = (unsigned int *) m_BufferConvert;
+		if (OsdPipSetup.SwapFfmpeg)
+		{
+			unsigned int * bufPtr = (unsigned int *) decoder.PicConvert()->data[0];
 			unsigned char red, green, blue, alpha;
-			for (int i = 0; i < size; i++) {
+			for (int i = 0; i < size; i++)
+			{
 				value = *bufPtr;
 				blue = value;
 				green = value >> 8;
@@ -247,66 +299,89 @@ void cOsdPipObject::ProcessImage(unsigned char * data, int length) {
 			}
 		}
 
-		quantizer->Quantize(m_BufferConvert, size, 127);
+		quantizer->Quantize(decoder.PicConvert()->data[0], size, 127);
 
 		outputPalette = quantizer->OutputPalette();
 		outputImage = quantizer->OutputImage();
-		if (OsdPipSetup.ColorDepth == kDepthColor256fix) {
-//			m_Bitmap->Clear();
-			for (int y = 0; y < m_Height; y++) {
-				for (int x = 0; x < m_Width; x++) {
-					m_Bitmap->SetPixel(x, y, (eDvbColor) m_Palette[m_PaletteLookup[outputImage[y * m_Width + x]]]);
+		if (OsdPipSetup.ColorDepth == kDepthColor256fix)
+		{
+#if VDRVERSNUM >= 10307
+			for (int i = 0; i < 256; i++)
+				m_Bitmap->SetColor(i, m_Palette[i]);
+#endif
+			for (int y = 0; y < m_Height; y++)
+			{
+				for (int x = 0; x < m_Width; x++)
+				{
+#if VDRVERSNUM >= 10307
+					m_Bitmap->SetIndex(x, y, outputImage[y * m_Width + x] + 1);
+#else
+					m_Bitmap->SetPixel(x, y, (eDvbColor) m_Palette[outputImage[y * m_Width + x]]);
+#endif
 				}
 			}
-		} else {
+		}
+		else
+		{
 			for (int i = 0; i < 127; i++)
 			{
-				m_Palette[m_PaletteLookup[m_PaletteStart + i]] = outputPalette[i];
-				m_Palette[m_PaletteLookup[m_PaletteStart + i]] |= m_AlphaBase;
+				m_Palette[m_PaletteStart + i] = outputPalette[i];
+				m_Palette[m_PaletteStart + i] |= m_AlphaBase;
 			}
 
-//			m_Bitmap->Clear();
 			for (int i = 0; i < 256; i++)
+#if VDRVERSNUM >= 10307
+				m_Bitmap->SetColor(i, m_Palette[i]);
+#else
 				m_Bitmap->SetColor(i, (eDvbColor) m_Palette[i]);
-			for (int y = 0; y < m_Height; y++) {
-				for (int x = 0; x < m_Width; x++) {
-					m_Bitmap->SetIndex(x, y, m_PaletteLookup[m_PaletteStart + outputImage[y * m_Width + x]]);
+#endif
+			for (int y = 0; y < m_Height; y++)
+			{
+				for (int x = 0; x < m_Width; x++)
+				{
+					m_Bitmap->SetIndex(x, y, m_PaletteStart + outputImage[y * m_Width + x]);
 				}
 			}
 
 			if (m_PaletteStart == 1)
+			{
 				m_PaletteStart = 128;
+#if VDRVERSNUM >= 10307
+				m_AlphaBase = 0xFE000000;
+#endif
+			}
 			else
+			{
 				m_PaletteStart = 1;
+#if VDRVERSNUM >= 10307
+				m_AlphaBase = 0xFF000000;
+#endif
+			}
 		}
 	}
-
+	if (!m_Ready)
+	{
+		if (OsdPipSetup.ShowInfo)
+			ShowChannelInfo(Channels.GetByNumber(cDevice::ActualDevice()->CurrentChannel()));
+		m_Ready = true;
+	}
+#if VDRVERSNUM >= 10307
+	m_Osd->DrawBitmap(OsdPipSetup.XPosition, OsdPipSetup.YPosition, *m_Bitmap);
+#else
 	m_Osd->Clear();
 	m_Osd->SetBitmap(OsdPipSetup.XPosition, OsdPipSetup.YPosition, 
-			*m_Bitmap);
+		*m_Bitmap);
+#endif
 	m_Osd->Flush();
 }
 
-void cOsdPipObject::Action(void) {
+void cOsdPipObject::Action(void)
+{
 	m_Active = true;
 
 	isyslog("osdpip: decoder thread started (pid = %d)", getpid());
 
-	m_Codec = avcodec_find_decoder(CODEC_ID_MPEG1VIDEO);
-	if (!m_Codec)
-	{
-		printf("codec not found\n");
-	}
-	m_Context = avcodec_alloc_context();
-	if (avcodec_open(m_Context, m_Codec) < 0)
-	{
-		printf("could not open codec\n");
-	}
-	m_PicDecoded = avcodec_alloc_frame();
-	m_PicResample = avcodec_alloc_frame();
-	m_BufferResample = new unsigned char[(400 * 300 * 3) / 2]; // size for YUV 420
-	m_PicConvert = avcodec_alloc_frame();
-	m_BufferConvert = new unsigned char[400 * 300 * 4]; // size for RGBA32
+	decoder.Open();
 
 	if (OsdPipSetup.ColorDepth == kDepthColor128var)
 		quantizer = new cQuantizeWu();
@@ -317,70 +392,135 @@ void cOsdPipObject::Action(void) {
 	int pictureType;
 	m_FrameDrop = OsdPipSetup.FrameDrop;
 
-	while (m_Active) {
+	while (m_Active)
+	{
+#if VDRVERSNUM >= 10307
+		if (m_Reset)
+		{
+			if (m_Osd)
+				delete m_Osd;
+			m_Osd = cOsdProvider::NewOsd(0, 0);
+			if (!m_Osd)
+				break;
+			m_Ready = false;
+			m_Reset = false;
+		}
+#endif
 		frame = m_ESBuffer->Get();
 		{
-			if (frame && frame->Count() > 0) {
+			if (frame && frame->Count() > 0)
+			{
 				pictureType = frame->Index();
-				if ((OsdPipSetup.FrameMode == kFrameModeI &&
-							pictureType == I_FRAME) ||
-						(OsdPipSetup.FrameMode == kFrameModeIP &&
-						 (pictureType == I_FRAME || pictureType == P_FRAME)) ||
-						(OsdPipSetup.FrameMode == kFrameModeIPB)) {
+				if ((OsdPipSetup.FrameMode == kFrameModeI && pictureType == I_FRAME) ||
+					(OsdPipSetup.FrameMode == kFrameModeIP && (pictureType == I_FRAME || pictureType == P_FRAME)) ||
+					(OsdPipSetup.FrameMode == kFrameModeIPB))
+				{
 					ProcessImage(frame->Data(), frame->Count());
 				}
 				m_ESBuffer->Drop(frame);
-			} else {
+			}
+			else
+			{
 				if (frame)
 					m_ESBuffer->Drop(frame);
 				usleep(1);
 			}
 		}
-		if (m_ShowTime != 0) {
-			if (m_ShowInfo) {
-				m_Osd->Clear(m_WindowInfo);
+		if (m_ShowTime != 0)
+		{
+			if (m_ShowInfo)
+			{
+#if VDRVERSNUM >= 10307
+				m_Osd->DrawBitmap(m_InfoX, m_InfoY, *m_BitmapInfo);
+#else
 				m_Osd->SetBitmap(0, 0, *m_BitmapInfo, m_WindowInfo);
 				m_Osd->Show(m_WindowInfo);
+#endif
 				m_Osd->Flush();
 				m_ShowInfo = false;
 			}
 			time_t currentTime;
 			time(&currentTime);
 			if (currentTime - m_ShowTime > 2) {
+#if VDRVERSNUM >= 10307
+				ShowChannelInfo(Channels.GetByNumber(cDevice::ActualDevice()->CurrentChannel()), false);
+				m_Osd->DrawBitmap(m_InfoX, m_InfoY, *m_BitmapInfo);
+				m_Osd->Flush();
+#else
 				m_Osd->Hide(m_WindowInfo);
+#endif
 				m_ShowTime = 0;
 			}
 		}
 	}
 
 	if (OsdPipSetup.ColorDepth == kDepthColor128var ||
-			OsdPipSetup.ColorDepth == kDepthColor256fix)
+		OsdPipSetup.ColorDepth == kDepthColor256fix)
 		delete quantizer;
-	delete[] m_BufferConvert;
-	free(m_PicConvert);
-	delete[] m_BufferResample;
-	free(m_PicResample);
-	avcodec_close(m_Context);
-	free(m_Context);
-	free(m_PicDecoded);
+	decoder.Close();
 
 	isyslog("osdpip: decoder thread stopped");
 }
 
-void cOsdPipObject::Show(void) {
+void cOsdPipObject::Show(void)
+{
+#if VDRVERSNUM >= 10307
+	Start();
+#else
 	m_Osd = cOsd::OpenRaw(0, 0);
 	if (m_Osd)
 		Start();
+#endif
 }
 
-eOSState cOsdPipObject::ProcessKey(eKeys Key) {
+eOSState cOsdPipObject::ProcessKey(eKeys Key)
+{
 	eOSState state = cOsdObject::ProcessKey(Key);
-  if (state == osUnknown) {
-    switch (Key & ~k_Repeat) {
+	if (state == osUnknown) {
+		switch (Key & ~k_Repeat) {
 			case k0:		Channels.SwitchTo(m_Channel->Number());
 			case kBack: return osEnd;
 
 			case k1...k9:
+#if VDRVERSNUM >= 10307
+				switch (Key & ~k_Repeat) {
+					case k1:
+						if (OsdPipSetup.XPosition >= Setup.OSDLeft + 10) OsdPipSetup.XPosition -= 10;
+						if (OsdPipSetup.YPosition >= Setup.OSDTop + 10) OsdPipSetup.YPosition -= 10;
+						break;
+					case k2:
+						if (OsdPipSetup.YPosition >= Setup.OSDTop + 10) OsdPipSetup.YPosition -= 10;
+						break;
+					case k3:
+						if (OsdPipSetup.XPosition + m_Width <= Setup.OSDLeft + Setup.OSDWidth - 10) 
+							OsdPipSetup.XPosition += 10;
+						if (OsdPipSetup.YPosition >= Setup.OSDTop + 10) OsdPipSetup.YPosition -= 10;
+						break;
+					case k4:
+						if (OsdPipSetup.XPosition >= Setup.OSDLeft + 10) OsdPipSetup.XPosition -= 10;
+						break;
+					case k6:
+						if (OsdPipSetup.XPosition + m_Width <= Setup.OSDLeft + Setup.OSDWidth - 10) 
+							OsdPipSetup.XPosition += 10;
+						break;
+					case k7:
+						if (OsdPipSetup.XPosition >= Setup.OSDLeft + 10) OsdPipSetup.XPosition -= 10;
+						if (OsdPipSetup.YPosition + m_Height <= Setup.OSDTop + Setup.OSDHeight - 10) 
+							OsdPipSetup.YPosition += 10;
+						break;
+					case k8:
+						if (OsdPipSetup.YPosition + m_Height <= Setup.OSDTop + Setup.OSDHeight - 10) 
+							OsdPipSetup.YPosition += 10;
+						break;
+					case k9:
+						if (OsdPipSetup.XPosition + m_Width <= Setup.OSDLeft + Setup.OSDWidth - 10) 
+							OsdPipSetup.XPosition += 10;
+						if (OsdPipSetup.YPosition + m_Height <= Setup.OSDTop + Setup.OSDHeight - 10) 
+							OsdPipSetup.YPosition += 10;
+						break;
+				}
+				m_Reset = true;
+#else
 				switch (Key & ~k_Repeat) {
 					case k1:
 						if (OsdPipSetup.XPosition > 9) OsdPipSetup.XPosition -= 10;
@@ -418,6 +558,7 @@ eOSState cOsdPipObject::ProcessKey(eKeys Key) {
 						break;
 				}
 				m_Osd->Relocate(m_Window, OsdPipSetup.XPosition, OsdPipSetup.YPosition);
+#endif
 				break;
 
 			case kUp:
@@ -436,13 +577,14 @@ eOSState cOsdPipObject::ProcessKey(eKeys Key) {
 				break;
 			default:
 				return state;
-    }
-    state = osContinue;
-  }
-  return state;
+		}
+		state = osContinue;
+	}
+	return state;
 }
 
-void cOsdPipObject::ChannelSwitch(const cDevice * device, int channelNumber) {
+void cOsdPipObject::ChannelSwitch(const cDevice * device, int channelNumber)
+{
 	if (device != cDevice::ActualDevice())
 		return;
 	if (channelNumber == 0)
@@ -453,7 +595,8 @@ void cOsdPipObject::ChannelSwitch(const cDevice * device, int channelNumber) {
 		ShowChannelInfo(Channels.GetByNumber(device->CurrentChannel()));
 }
 
-void cOsdPipObject::ShowChannelInfo(const cChannel * channel) {
+void cOsdPipObject::ShowChannelInfo(const cChannel * channel, bool show)
+{
 	char line1[100] = "";
 	char line2[100] = "";
 
@@ -471,9 +614,11 @@ void cOsdPipObject::ShowChannelInfo(const cChannel * channel) {
 				presentTitle = present->Title();
 				if (!isempty(presentTitle)) {
 					sprintf(line2, "%s %s", present->GetTimeString(), presentTitle);
+#if VDRVERSNUM < 10307
 					while (m_Osd->Width(line2) > OsdPipSetup.InfoWidth - 10) {
 						line2[strlen(line2) - 1] = 0;
 					}
+#endif
 				}
 			}
 		}
@@ -498,11 +643,56 @@ void cOsdPipObject::ShowChannelInfo(const cChannel * channel) {
 		}
 	}
 #endif
-	m_BitmapInfo->Clear();
- 	m_BitmapInfo->Fill(0, 0, OsdPipSetup.InfoWidth, 60, (eDvbColor) 0xFF000000);
+#if VDRVERSNUM >= 10307
+	if (OsdPipSetup.ColorDepth == kDepthGrey16)
+	{
+		if (show)
+		{
+			m_BitmapInfo->DrawRectangle(0, 0, OsdPipSetup.InfoWidth - 1, 60 - 1, clrBlack);
+			const cFont *font = cFont::GetFont(fontOsd);
+			m_BitmapInfo->DrawText(0, 0, line1, clrWhite, clrBlack, font, OsdPipSetup.InfoWidth, 30);
+			m_BitmapInfo->DrawText(0, 30, line2, clrWhite, clrBlack, font, OsdPipSetup.InfoWidth, 30);
+			time(&m_ShowTime);
+			m_ShowInfo = true;
+		}
+		else
+		{
+			m_BitmapInfo->DrawRectangle(0, 0, OsdPipSetup.InfoWidth - 1, 60 - 1, clrTransparent);
+		}
+	}
+	else
+	{
+		if (show)
+		{
+			m_Palette[0] = 0xFD000000;
+			m_Palette[255] = 0xFDFFFFFF;
+			m_BitmapInfo->DrawRectangle(0, 0, OsdPipSetup.InfoWidth - 1, 60 - 1, m_Palette[0]);
+			for (int i = 0; i < 256; i++)
+				m_BitmapInfo->SetColor(i, m_Palette[i]);
+			const cFont *font = cFont::GetFont(fontOsd);
+			m_BitmapInfo->DrawText(0, 0, line1, m_Palette[255], m_Palette[0], font, OsdPipSetup.InfoWidth, 30);
+			m_BitmapInfo->DrawText(0, 30, line2, m_Palette[255], m_Palette[0], font, OsdPipSetup.InfoWidth, 30);
+			time(&m_ShowTime);
+			m_ShowInfo = true;
+		}
+		else
+		{
+			m_Palette[0] = 0x00000000;
+			m_Palette[255] = 0x00FFFFFF;
+			m_BitmapInfo->DrawRectangle(0, 0, OsdPipSetup.InfoWidth - 1, 60 - 1, m_Palette[0]);
+			for (int i = 0; i < 256; i++)
+				m_BitmapInfo->SetColor(i, m_Palette[i]);
+		}
+	}
+#else
+	if (OsdPipSetup.ColorDepth != kDepthGrey16)
+	for (int i = 0; i < 256; i++)
+		m_BitmapInfo->SetColor(i, (eDvbColor) m_Palette[i]);
+	m_BitmapInfo->Fill(0, 0, OsdPipSetup.InfoWidth, 60, (eDvbColor) 0xFF000000);
 	m_BitmapInfo->Text(0, 0, line1, (eDvbColor) 0xFFFFFFFF, (eDvbColor) 0xFF000000);
 	m_BitmapInfo->Text(0, 30, line2, (eDvbColor) 0xFFFFFFFF, (eDvbColor) 0xFF000000);
 	time(&m_ShowTime);
 	m_ShowInfo = true;
+#endif
 }
 

@@ -10,7 +10,7 @@
 #include <vdr/plugin.h>
 
 const int kDepthGrey16 = 0;
-const int kDepthGrey128 = 1;
+const int kDepthGrey256 = 1;
 const int kDepthColor256fix = 2;
 const int kDepthColor128var = 3;
 
