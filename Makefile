@@ -21,6 +21,7 @@ CXXFLAGS ?= -g -O2 -Wall -Woverloaded-virtual
 ### The directory environment:
 
 DVBDIR = ../../../../DVB
+FFMDIR = ../../../../ffmpeg
 VDRDIR = ../../..
 LIBDIR = ../../lib
 TMPDIR = /tmp
@@ -40,18 +41,17 @@ PACKAGE = vdr-$(ARCHIVE)
 
 ### Includes and Defines (add further entries here):
 
-INCLUDES += -I$(VDRDIR)/include -I$(DVBDIR)/include -I.
-LIBS     = -lmpeg2 -lmpeg2convert
+INCLUDES += -I$(VDRDIR)/include -I$(DVBDIR)/include -I. -I$(FFMDIR)/libavcodec
+LIBS     = -L$(FFMDIR)/libavcodec -lavcodec
 DEFINES += -DPLUGIN_NAME_I18N='"$(PLUGIN)"'
 
 ### The object files (add further files here):
 
-OBJS = $(PLUGIN).o osd.o receiver.o config.o i18n.o \
-  \
-  remux/tsremux.o remux/ts2ps.o remux/ts2es.o
+OBJS = $(PLUGIN).o osd.o receiver.o config.o i18n.o pes.o quantize.o
 
-libdvbmpeg/libdvbmpegtools.a: libdvbmpeg/*.c libdvbmpeg/*.cc libdvbmpeg/*.h libdvbmpeg/*.hh
-	make -C ./libdvbmpeg libdvbmpegtools.a
+ifdef FFMPEG_STATIC
+	DEFINES += -DHAVE_FFMPEG_STATIC
+endif
 
 ### Implicit rules:
 
@@ -71,7 +71,7 @@ $(DEPFILE): Makefile
 
 all: libvdr-$(PLUGIN).so
 
-libvdr-$(PLUGIN).so: $(OBJS) libdvbmpeg/libdvbmpegtools.a
+libvdr-$(PLUGIN).so: $(OBJS)
 	$(CXX) $(CXXFLAGS) -shared -o $@ $^ $(LIBS)
 	@cp $@ $(LIBDIR)/$@.$(VDRVERSION)
 
@@ -85,4 +85,3 @@ dist: clean
 
 clean:
 	@-rm -f $(OBJS) $(DEPFILE) *.so *.tgz core* *~
-	make -C libdvbmpeg clean

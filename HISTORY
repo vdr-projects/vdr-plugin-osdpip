@@ -1,6 +1,18 @@
 VDR Plugin 'osdpip' Revision History
 ------------------------------------
 
+2004-01-28: Version 0.0.3 (written by Andreas Regel)
+
+- new TS->ES remuxer: now using VDR's cRemux for TS->PES and some own code
+  for PES->ES
+- now using libavcodec from ffmpeg instead of mpeg2dec
+- frames to decode configurable (I-frames, I-/P-frames, all frames)
+- frame dropping configurable
+- added new color depths:
+ - 128 shades greyscale
+ - 128 colors with variable palette using Wu's quantizer (patch needed)
+- changed osd size setting to 6 configurable values
+
 2004-01-03: Version 0.0.2
 
 - Added setup menu

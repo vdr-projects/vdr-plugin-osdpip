@@ -1,3 +1,9 @@
+/*
+ * OSD Picture in Picture plugin for the Video Disk Recorder
+ *
+ * See the README file for copyright information and how to reach the author.
+ */
+
 #ifndef VDR_OSDPIP_RECEIVER_H
 #define VDR_OSDPIP_RECEIVER_H
 
@@ -5,13 +11,14 @@
 #include <vdr/thread.h>
 
 class cRingBufferLinear;
-class cTS2ESRemux;
+class cRingBufferFrame;
+class cRemux;
 
 class cOsdPipReceiver: public cReceiver, public cThread {
 private:
 	cRingBufferLinear *m_TSBuffer;
-	cRingBufferLinear *m_ESBuffer;
-	cTS2ESRemux *m_Remux;
+	cRingBufferFrame *m_ESBuffer;
+	cRemux *m_Remux;
 
 	bool m_Active;
 
@@ -22,7 +29,7 @@ protected:
 
 public:
 	cOsdPipReceiver::cOsdPipReceiver(const cChannel *Channel, 
-			cRingBufferLinear *ESBuffer);
+			cRingBufferFrame *ESBuffer);
 	virtual ~cOsdPipReceiver();
 };
 

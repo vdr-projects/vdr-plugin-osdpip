@@ -1,3 +1,9 @@
+/*
+ * OSD Picture in Picture plugin for the Video Disk Recorder
+ *
+ * See the README file for copyright information and how to reach the author.
+ */
+
 #include "i18n.h"
 
 const tI18nPhrase Phrases[] = {

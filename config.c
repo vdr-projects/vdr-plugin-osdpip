@@ -1,26 +1,68 @@
+/*
+ * OSD Picture in Picture plugin for the Video Disk Recorder
+ *
+ * See the README file for copyright information and how to reach the author.
+ */
+
 #include "config.h"
 
-int ColorDepths = (MAXNUMCOLORS == 256 ? 2 : 1);
 #if MAXNUMCOLORS < 256
-#	warning WARNING: YOU WILL NOT BE ABLE TO USE RGB PIP
+#	warning WARNING: YOU WILL NOT BE ABLE TO USE 256 COLOR PIP
 #endif
 
+#ifndef VDR_OSDPIP_PATCHED
+# warning WARNING: YOU WILL NOT BE ABLE TO USE VARIABLE COLOR PIP
+#endif
+
+#if MAXNUMCOLORS < 256
+const int kColorDepths = 1;
+#else
+# ifndef VDR_OSDPIP_PATCHED
+const int kColorDepths = 3;
+# else
+const int kColorDepths = 4;
+# endif
+#endif
+
+const int kSizes = 6;
+const int kFrameModes = 3;
+
 const char *ColorDepthItems[] = {
-	"Greyscale",
-	"256 colors"
+	"Greyscale (16)",
+	"Greyscale (128)",
+	"Color (256, fixed)",
+	"Color (128, variable)"
+};
+
+const char *SizeItems[] = {
+	"120x96",
+	"160x128",
+	"200x160",
+	"240x192",
+	"280x224",
+	"320x256"
+};
+
+const char *FrameModeItems[] = {
+	"I-Frames",
+	"I-, P-Frames",
+	"I-, P-, B-Frames"
 };
 
 cOsdPipSetup OsdPipSetup;
 
 cOsdPipSetup::cOsdPipSetup(void) {
-	XPosition  = 20;
-	YPosition  = 20;
+	XPosition  = 50;
+	YPosition  = 50;
 	CropLeft   = 5;
 	CropRight  = 5;
 	CropTop    = 5;
 	CropBottom = 5;
-	ZoomFactor = 3;
-	ColorDepth = (MAXNUMCOLORS == 256 ? 1 : 0);
+	ColorDepth = kDepthGrey16;
+	Size = 2;
+	FrameMode = kFrameModeI;
+	FrameDrop = 0;
+	SwapFfmpeg = 1;
 }
 
 bool cOsdPipSetup::SetupParse(const char *Name, const char *Value) {
@@ -30,8 +72,11 @@ bool cOsdPipSetup::SetupParse(const char *Name, const char *Value) {
 	else if (strcmp(Name, "CropRight")  == 0) CropRight  = atoi(Value);
 	else if (strcmp(Name, "CropTop")    == 0) CropTop    = atoi(Value);
 	else if (strcmp(Name, "CropBottom") == 0) CropBottom = atoi(Value);
-	else if (strcmp(Name, "ZoomFactor") == 0) ZoomFactor = atoi(Value);
 	else if (strcmp(Name, "ColorDepth") == 0) ColorDepth = atoi(Value);
+	else if (strcmp(Name, "Size")       == 0) Size       = atoi(Value);
+	else if (strcmp(Name, "FrameMode")  == 0) FrameMode  = atoi(Value);
+	else if (strcmp(Name, "FrameDrop")  == 0) FrameDrop  = atoi(Value);
+	else if (strcmp(Name, "SwapFfmpeg") == 0) SwapFfmpeg = atoi(Value);
 	else return false;
 	return true;
 }
@@ -46,10 +91,14 @@ cOsdPipSetupPage::cOsdPipSetupPage(void) {
 			80));
 	Add(new cMenuEditIntItem(tr("Crop at bottom"), &m_NewOsdPipSetup.CropBottom, 
 			0, 80));
-	Add(new cMenuEditIntItem(tr("Zoom factor"), &m_NewOsdPipSetup.ZoomFactor, 2,
-			4));
-	Add(new cMenuEditStraItem(tr("Colordepth"), &m_NewOsdPipSetup.ColorDepth, 
-			ColorDepths, ColorDepthItems));
+	Add(new cMenuEditStraItem(tr("Color depth"),
+			&m_NewOsdPipSetup.ColorDepth, kColorDepths, ColorDepthItems));
+	Add(new cMenuEditStraItem(tr("Size"),
+			&m_NewOsdPipSetup.Size, kSizes, SizeItems));
+	Add(new cMenuEditStraItem(tr("Frames to display"),
+			&m_NewOsdPipSetup.FrameMode, kFrameModes, FrameModeItems));
+	Add(new cMenuEditIntItem(tr("Drop frames"), &m_NewOsdPipSetup.FrameDrop, 0, 2));
+	Add(new cMenuEditBoolItem(tr("Swap FFMPEG output"), &m_NewOsdPipSetup.SwapFfmpeg));
 }
 
 cOsdPipSetupPage::~cOsdPipSetupPage() {
@@ -64,6 +113,9 @@ void cOsdPipSetupPage::Store(void) {
 	SetupStore("CropRight",  OsdPipSetup.CropRight);
 	SetupStore("CropTop",    OsdPipSetup.CropTop);
 	SetupStore("CropBottom", OsdPipSetup.CropBottom);
-	SetupStore("ZoomFactor", OsdPipSetup.ZoomFactor);
 	SetupStore("ColorDepth", OsdPipSetup.ColorDepth);
+	SetupStore("Size",       OsdPipSetup.Size);
+	SetupStore("FrameMode",  OsdPipSetup.FrameMode);
+	SetupStore("FrameDrop",  OsdPipSetup.FrameDrop);
+	SetupStore("SwapFfmpeg", OsdPipSetup.SwapFfmpeg);
 }

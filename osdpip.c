@@ -1,10 +1,17 @@
 /*
- * osdpip.c: A plugin for the Video Disk Recorder
+ * OSD Picture in Picture plugin for the Video Disk Recorder
  *
  * See the README file for copyright information and how to reach the author.
- *
- * $Id$
  */
+
+extern "C"
+{
+#ifdef HAVE_FFMPEG_STATIC
+#	include <avcodec.h>
+#else
+#	include <ffmpeg/avcodec.h>
+#endif
+}
 
 #include "osd.h"
 #include "config.h"
@@ -12,7 +19,7 @@
 
 #include <vdr/plugin.h>
 
-static const char *VERSION        = "0.0.2";
+static const char *VERSION        = "0.0.3";
 static const char *DESCRIPTION    = "OSD Picture-in-Picture";
 static const char *MAINMENUENTRY  = "Picture-in-Picture";
 
@@ -50,6 +57,11 @@ bool cPluginOsdpip::ProcessArgs(int argc, char *argv[]) {
 }
 
 bool cPluginOsdpip::Initialize(void) {
+	// must be called before using avcodec lib
+	avcodec_init();
+	// register all the codecs (you can also register only the codec
+   	// you wish to have smaller code)
+	avcodec_register_all();
   return true;
 }
 

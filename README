@@ -1,6 +1,7 @@
 This is a "plugin" for the Video Disk Recorder (VDR).
 
 Written by:                  Sascha Volkenandt <sascha@akv-soft.de>
+                             Andreas Regel <andreas.regel@powarman.de>
 
 Project's homepage:          http://www.magoa.net/linux/index.php?view=osdpip
 
@@ -11,9 +12,7 @@ See the file COPYING for license information.
 
 Requirements:
 
-- libmpeg2 (http://libmpeg2.sourceforge.net) version 0.4.0 (OLDER VERSIONS 
-  DON'T WORK)
-
+- libavcodec from ffmpeg (http://ffmpeg.sourceforge.net) version 0.4.8
 
 Description:
 
@@ -21,20 +20,28 @@ OSD Picture-in-Picture is a PlugIn that displays the current channel in a
 small box on the screen (default upper right corner). You can switch up and 
 down now, watching the progress of the previous channel in the box. Quality is 
 not too good yet, and only I-Frames are displayed. 
-From 0.0.2 on, the plugin supports two modes: grayscaled and 256 colored. If 
-you want 256 colors, you'll need to upgrade your VDR to support a 256 color OSD
-with the provided patching instruction. You can choose the color depth in the 
-setup menu. If you didn't patch VDR appropriately, you'll only be able to choose
-grayscaled mode.
-Also by 0.0.2, the plugin has the possibility to choose the PiP size (in the 
-setup menu in factors of 1/x) and position (by moving it around using number 
-keys) as well as crop dimensions.
-
-ATTENTION: To use PiP size factor 2 in 256 color mode, you need to set all crop
-values to >50 pixels.
+The plugin supports four modes:
+ - greyscaled (16 shades of grey)
+ - greyscaled (128 shades of grey)
+ - 256 colors with fixed palette
+ - 128 colors with variable palette
+The first mode works with an ordinary vdr installation. If you want to use the
+other modes, you'll need to upgrade your VDR to support a 256 color OSD
+with the provided patching instruction. The variable palette mode needs more
+extensive changes to VDR's source code using the provided patch that gives the
+plugin more control over the OSD's palette. You can choose the color depth in 
+the setup menu. If you didn't patch VDR appropriately, you'll only be able to
+choose greyscaled mode.
+The plugin has the possibility to choose the PiP size (in the setup menu from
+predefined sizes) and position (by moving it around using number keys) as well
+as crop dimensions.
 
 ATTENTION: To have the position saved, you have to enter the plugin's setup menu
 and hit the ok button.
+
+From 0.0.3 on the plugin lets you choose the MPEG frames to decode and display
+(in the setup menu). For slower machines it is further possible to set an
+additional frame dropping.
 
 
 Installation:
@@ -48,12 +55,29 @@ tar xvfz vdr-osdpip-0.0.1.tgz
 ln -s osdpip-0.0.1 osdpip
 cd ../..
 
+If you have ffmpeg installed, make plugins should do just fine now, but if you
+have it next to your vdr folder (e.g. as the DXR3 plugin needs it), you have
+to compile with make FFMPEG_STATIC=1 plugins. Ffmpeg must then be present in a
+folder (or symlink) called "ffmpeg".
+
+NOTE: The next step is not needed if you use the variable color patch provided
+below that!
+
 Now, you have to call your favourite editor to open osdbase.h and jump to line
 number 16. I don't provide a patch here because some patches already touch that
 area. Well this one's easy, though. Just increase the number of colors in this
 line to 256. If you don't want 256 color support, you can skip this part.
 
 #define MAXNUMCOLORS 256
+
+If you want variable palette color mode you will have to further modify VDR's
+source code using a patch from patches subdirectory. I provide two versions of
+the patch: vdr-1.2.6.diff for a plain VDR installation and vdr-1.2.6_256.diff
+for a version that already has 256 color support.
+
+To apply this patch call
+ patch -p1 < PLUGINS/src/osdpip/patches/vdr-1.2.6.diff
+from VDR's source code directory.
 
 Now, you have to re-build VDR and Plugins.
 
