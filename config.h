@@ -18,22 +18,30 @@ const int kFrameModeI = 0;
 const int kFrameModeIP = 1;
 const int kFrameModeIPB = 2;
 
+const int kInfoTopLeft = 0;
+const int kInfoTopRight = 1;
+const int kInfoBottomLeft = 2;
+const int kInfoBottomRight = 3;
+
 struct cOsdPipSetup {
 	cOsdPipSetup(void);
 
 	bool SetupParse(const char *Name, const char *Value);
 
-	int  XPosition;
-	int  YPosition;
-	int  CropLeft;
-	int  CropRight;
-	int  CropTop;
-	int  CropBottom;
-	int  ColorDepth;
-	int  Size;
-	int  FrameMode;
-	int  FrameDrop;
-	int  SwapFfmpeg;
+	int XPosition;
+	int YPosition;
+	int CropLeft;
+	int CropRight;
+	int CropTop;
+	int CropBottom;
+	int ColorDepth;
+	int Size;
+	int FrameMode;
+	int FrameDrop;
+	int SwapFfmpeg;
+	int ShowInfo;
+	int InfoWidth;
+	int InfoPosition;
 };
 
 extern cOsdPipSetup OsdPipSetup;

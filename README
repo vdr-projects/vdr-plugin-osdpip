@@ -43,6 +43,11 @@ From 0.0.3 on the plugin lets you choose the MPEG frames to decode and display
 (in the setup menu). For slower machines it is further possible to set an
 additional frame dropping.
 
+From 0.0.4 the plugins shows some channel and schedule info in a second window
+when switching channels. In setup menu you can change it's position and size.
+This works flawlessly in 16 color greyscale mode. If you want to use it in one
+of the other provided modes you have to use one of the already mentioned
+patches. Otherwise you have to live with wrong colors in this modes.
 
 Installation:
 
@@ -91,4 +96,5 @@ Up/Down    Switch Channel up/down
 1-4,6-9    Move box around like with cursor keys
 0          Switch back to PiP channel and exit PiP
 Back       Exit PiP without switching back
+Ok         Show/hide channel info window
 

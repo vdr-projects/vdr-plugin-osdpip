@@ -16,6 +16,8 @@ extern "C"
 #endif
 }
 
+#include <sys/time.h>
+
 #include <vdr/osd.h>
 #include <vdr/thread.h>
 #include <vdr/status.h>
@@ -25,14 +27,19 @@ class cRingBufferFrame;
 class cOsdPipReceiver;
 class cQuantize;
 
-class cOsdPipObject: public cOsdObject, public cThread {
+class cOsdPipObject: public cOsdObject, public cThread, public cStatus {
 private:
 	cOsdBase *m_Osd;
 	cRingBufferFrame *m_ESBuffer;
 	cOsdPipReceiver *m_Receiver;
 	const cChannel *m_Channel;
 	tWindowHandle m_Window;
-	cBitmap *m_Bitmap;
+	cBitmap * m_Bitmap;
+	tWindowHandle m_WindowInfo;
+	cBitmap * m_BitmapInfo;
+
+	time_t m_ShowTime;
+	bool m_ShowInfo;
 
 	bool m_Active;
 	bool m_Ready;
@@ -50,6 +57,7 @@ private:
 	unsigned int m_AlphaBase;
 	unsigned int m_Palette[256];
 	int m_PaletteStart;
+	unsigned char m_PaletteLookup[256];
 
 	cQuantize * quantizer;
 
@@ -57,8 +65,11 @@ private:
 	int Resample();
 	int ConvertToRGB();
 	void ProcessImage(unsigned char * data, int length);
+
+	void ShowChannelInfo(const cChannel * channel);
 protected:
 	virtual void Action(void);
+  virtual void ChannelSwitch(const cDevice * device, int channelNumber);
 
 public:
 	cOsdPipObject(cDevice *Device, const cChannel *Channel);

@@ -1,7 +1,12 @@
 VDR Plugin 'osdpip' Revision History
 ------------------------------------
 
-2004-01-28: Version 0.0.3 (written by Andreas Regel)
+2004-02-04: Version 0.0.4 (written by Andreas Regel)
+
+- a second osd window with some information about the viewed channel and
+  event is now shown on screen
+
+2004-01-24: Version 0.0.3 (written by Andreas Regel)
 
 - new TS->ES remuxer: now using VDR's cRemux for TS->PES and some own code
   for PES->ES

@@ -1,6 +1,3 @@
-- Show some info when switching channels in an extra OSD window
-  (this is a bit tricky when a 256-color OSD window is on screen,
-	but possible)
 - improve fixed palette color quantization
 - localization
-
+- vdr-like navigation through channels

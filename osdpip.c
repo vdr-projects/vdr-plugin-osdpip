@@ -19,7 +19,7 @@ extern "C"
 
 #include <vdr/plugin.h>
 
-static const char *VERSION        = "0.0.3";
+static const char *VERSION        = "0.0.4";
 static const char *DESCRIPTION    = "OSD Picture-in-Picture";
 static const char *MAINMENUENTRY  = "Picture-in-Picture";
 
