@@ -14,7 +14,9 @@
 
 cOsdPipReceiver::cOsdPipReceiver(const cChannel *Channel, 
 	cRingBufferFrame *ESBuffer):
-#if VDRVERSNUM >= 10318
+#if VDRVERSNUM >= 10319
+	cReceiver(Channel->Ca(), 0, Channel->Vpid(), Channel->Apids())
+#elif VDRVERSNUM >= 10318
 	cReceiver(Channel->Ca(), 0, 2, Channel->Vpid(), Channel->Apid(0))
 #else
 	cReceiver(Channel->Ca(), 0, 2, Channel->Vpid(), Channel->Apid1())
@@ -25,7 +27,9 @@ cOsdPipReceiver::cOsdPipReceiver(const cChannel *Channel,
 	m_TSBuffer->SetTimeouts(0, 100);
 #endif
 	m_ESBuffer = ESBuffer;
-#if VDRVERSNUM >= 10318
+#if VDRVERSNUM >= 10319
+	m_Remux = new cRemux(Channel->Vpid(), Channel->Apids(), 0, 0, true);
+#elif VDRVERSNUM >= 10318
 	m_Remux = new cRemux(Channel->Vpid(), Channel->Apid(0), 0, 0, 0, true);
 #else
 	m_Remux = new cRemux(Channel->Vpid(), Channel->Apid1(), 0, 0, 0, true);
