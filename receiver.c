@@ -17,6 +17,9 @@ cOsdPipReceiver::cOsdPipReceiver(const cChannel *Channel,
 	cReceiver(Channel->Ca(), 0, 2, Channel->Vpid(), Channel->Apid1())
 {
 	m_TSBuffer = new cRingBufferLinear(MEGABYTE(3), TS_SIZE * 2, true);
+#if VDRVERSNUM >= 10313
+	m_TSBuffer->SetTimeouts(0, 100);
+#endif
 	m_ESBuffer = ESBuffer;
 	m_Remux = new cRemux(Channel->Vpid(), Channel->Apid1(), 0, 0, 0, true);
 	m_Active = false;
@@ -43,7 +46,11 @@ void cOsdPipReceiver::Receive(uchar *Data, int Length)
 {
 	int put = m_TSBuffer->Put(Data, Length);
 	if (put != Length)
+#if VDRVERSNUM < 10313
 		esyslog("osdpip: ringbuffer overflow (%d bytes dropped)", Length - put);
+#else
+		m_TSBuffer->ReportOverflow(Length - put);
+#endif
 }
 
 void cOsdPipReceiver::Action(void)
@@ -58,6 +65,7 @@ void cOsdPipReceiver::Action(void)
 	int VideoBufferPos = 0;
 
 	while (m_Active) {
+#if VDRVERSNUM < 10313
 		int r;
 		const uchar *b = m_TSBuffer->Get(r);
 		if (b) {
@@ -90,6 +98,51 @@ void cOsdPipReceiver::Action(void)
 			}
 		} else
 	 		usleep(1); // this keeps the CPU load low
+#else
+		int r;
+		const uchar *b = m_TSBuffer->Get(r);
+		if (b) {
+	 		int Count = m_Remux->Put(b, r);
+			if (Count)
+				m_TSBuffer->Del(Count);
+		}
+
+		int Result;
+		uchar *p = m_Remux->Get(Result, &NewPictureType);
+		if (p) {
+			if (NewPictureType != NO_PICTURE) {
+				if ((OsdPipSetup.FrameMode == kFrameModeI && CurPictureType == I_FRAME) ||
+					(OsdPipSetup.FrameMode == kFrameModeIP && (CurPictureType == I_FRAME || CurPictureType == P_FRAME)) ||
+					(OsdPipSetup.FrameMode == kFrameModeIPB))
+				{
+					cFrame * frame = new cFrame(VideoBuffer, VideoBufferPos, ftVideo, CurPictureType);
+					if (!m_ESBuffer->Put(frame))
+					{
+						delete frame;
+					}
+				}
+				CurPictureType = NewPictureType;
+				VideoBufferPos = 0;
+			}
+
+			int t = 0;
+			int l = ((p[4] << 8) | p[5]) + 6;
+			while (t + l <= Result) {
+				cPESPacket Packet(p + t, l);
+				int PayloadLength = 0;
+				unsigned char * PayloadData = Packet.Payload(PayloadLength);
+				if ((Packet.StreamId() & 0xF0) == 0xE0) { // video packet
+					memcpy(&VideoBuffer[VideoBufferPos], PayloadData, PayloadLength);
+					VideoBufferPos += PayloadLength;
+				}
+				t += l;
+				if (t >= Result)
+					break;
+				l = ((p[t + 4] << 8) | p[t + 5]) + 6;
+			}
+			m_Remux->Del(t);
+		}
+#endif
 	}
 
 	dsyslog("osdpip: receiver thread ended (pid=%d)", getpid());

@@ -21,7 +21,7 @@ CXXFLAGS ?= -g -O2 -Wall -Woverloaded-virtual
 ### The directory environment:
 
 DVBDIR = ../../../../DVB
-FFMDIR = ../../../../ffmpeg
+FFMDIR = ../../../../ffmpeg-0.4.8
 VDRDIR = ../../..
 LIBDIR = ../../lib
 TMPDIR = /tmp
