@@ -1,0 +1,57 @@
+This is a "plugin" for the Video Disk Recorder (VDR).
+
+Written by:                  Sascha Volkenandt <sascha@akv-soft.de>
+
+Project's homepage:          http://www.magoa.net/linux/index.php?view=osdpip
+
+Latest version available at: http://www.magoa.net/linux/index.php?view=osdpip
+
+See the file COPYING for license information.
+
+
+Requirements:
+
+- libmpeg2 (http://libmpeg2.sourceforge.net) version 0.4.0 (OLDER VERSIONS 
+  DON'T WORK)
+
+
+Description:
+
+OSD Picture-in-Picture is a PlugIn that displays the current channel in a 
+small box on the screen (default upper right corner). You can switch up and 
+down now, watching the progress of the previous channel in the box. Quality is 
+not too good yet, and only I-Frames are displayed. You'll need to upgrade your
+VDR to support a 256 color OSD with the provided patching instruction.
+
+
+Installation:
+
+Let's say osdpip's version is 0.0.1 and vdr's version is 1.2.6. If you 
+use anything else please exchange the version numbers appropriately (this
+way I don't have to update this section all the times;) ).
+
+cd vdr-1.2.6/PLUGINS/src
+tar xvfz vdr-osdpip-0.0.1.tgz
+ln -s osdpip-0.0.1 osdpip
+cd ../..
+
+Now, you have to call your favourite editor to open osdbase.h and jump to line
+number 16. I don't provide a patch here because some patches already touch that
+area. Well this one's easy, though. Just increase the number of colors in this
+line to 256.
+
+#define MAXNUMCOLORS 256
+
+Now, you have to re-build VDR and Plugins.
+
+make [options, if necessary] vdr
+make [options, if necessary] plugins
+
+
+Controls:
+
+Up/Down    Switch Channel up/down
+1-9        Set Box Position
+0          Switch back to PiP channel and exit PiP
+Back       Exit PiP without switching back
+
