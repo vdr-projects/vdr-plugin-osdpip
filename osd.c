@@ -697,7 +697,7 @@ void cOsdPipObject::ShowChannelInfo(const cChannel * channel, bool show)
 			if ((present = schedule->GetPresentEvent()) != NULL) {
 				presentTitle = present->Title();
 				if (!isempty(presentTitle)) {
-					sprintf(line2, "%s %s", present->GetTimeString(), presentTitle);
+					sprintf(line2, "%s %s", (const char*)present->GetTimeString(), presentTitle);
 #if VDRVERSNUM < 10307
 					while (m_Osd->Width(line2) > OsdPipSetup.InfoWidth - 10) {
 						line2[strlen(line2) - 1] = 0;

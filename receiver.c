@@ -14,14 +14,22 @@
 
 cOsdPipReceiver::cOsdPipReceiver(const cChannel *Channel, 
 	cRingBufferFrame *ESBuffer):
+#if VDRVERSNUM >= 10318
+	cReceiver(Channel->Ca(), 0, 2, Channel->Vpid(), Channel->Apid(0))
+#else
 	cReceiver(Channel->Ca(), 0, 2, Channel->Vpid(), Channel->Apid1())
+#endif
 {
 	m_TSBuffer = new cRingBufferLinear(MEGABYTE(3), TS_SIZE * 2, true);
 #if VDRVERSNUM >= 10313
 	m_TSBuffer->SetTimeouts(0, 100);
 #endif
 	m_ESBuffer = ESBuffer;
+#if VDRVERSNUM >= 10318
+	m_Remux = new cRemux(Channel->Vpid(), Channel->Apid(0), 0, 0, 0, true);
+#else
 	m_Remux = new cRemux(Channel->Vpid(), Channel->Apid1(), 0, 0, 0, true);
+#endif
 	m_Active = false;
 }
 
