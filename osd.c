@@ -8,7 +8,7 @@
 #include "decoder.h"
 #include "quantize.h"
 #include "receiver.h"
-#include "config.h"
+#include "setup.h"
 
 #include <vdr/ringbuffer.h>
 #include <vdr/remux.h>
@@ -43,13 +43,10 @@ cOsdPipObject::cOsdPipObject(cDevice *Device, const cChannel *Channel)
 
 cOsdPipObject::~cOsdPipObject()
 {
-	if (m_Active)
-	{
-		m_Active = false;
-		Cancel(3);
-	}
+	Stop();
 
 	delete m_Receiver;
+	delete m_ESBuffer;
 	if (m_Bitmap != NULL)
 		delete m_Bitmap;
 	if (m_BitmapInfo != NULL)
@@ -58,39 +55,75 @@ cOsdPipObject::~cOsdPipObject()
 		delete m_Osd;
 }
 
+void cOsdPipObject::Stop(void)
+{
+	if (m_Active)
+	{
+		m_Active = false;
+		Cancel(3);
+	}
+	m_ESBuffer->Clear();
+}
+
+void cOsdPipObject::SwapChannels(void)
+{
+	const cChannel *chan = cDevice::CurrentChannel() != 0 
+		? Channels.GetByNumber(cDevice::CurrentChannel()) : NULL;
+	if (chan) {
+		Stop();
+		Channels.SwitchTo(m_Channel->Number());
+		cDevice *dev = cDevice::GetDevice(chan, 1);
+		if (dev) {
+			DELETENULL(m_Receiver);
+			m_Channel = chan;
+			dev->SwitchChannel(m_Channel, false);
+			m_Receiver = new cOsdPipReceiver(m_Channel, m_ESBuffer);
+			dev->AttachReceiver(m_Receiver);
+		}
+		Start();
+	}
+}
+
 void cOsdPipObject::ProcessImage(unsigned char * data, int length)
 {
 	unsigned int value;
 	unsigned int * outputPalette;
 	unsigned char * outputImage;
+	int height;
 
-	if (OsdPipSetup.FrameMode == kFrameModeI)
+	if (m_FrameDrop != -1)
 	{
-		if (m_FrameDrop == OsdPipSetup.FrameDrop)
+		if (OsdPipSetup.FrameMode == kFrameModeI)
 		{
-			m_FrameDrop = 0;
-		}
-		else
-		{
-			m_FrameDrop++;
-			return;
+			if (m_FrameDrop == OsdPipSetup.FrameDrop)
+			{
+				m_FrameDrop = 0;
+			}
+			else
+			{
+				m_FrameDrop++;
+				return;
+			}
 		}
 	}
 
 	if (decoder.Decode(data, length) != 0)
 		return;
 
-	if (OsdPipSetup.FrameMode == kFrameModeIP ||
-		OsdPipSetup.FrameMode == kFrameModeIPB)
+	if (m_FrameDrop != -1)
 	{
-		if (m_FrameDrop == OsdPipSetup.FrameDrop)
+		if (OsdPipSetup.FrameMode == kFrameModeIP ||
+			OsdPipSetup.FrameMode == kFrameModeIPB)
 		{
-			m_FrameDrop = 0;
-		}
-		else
-		{
-			m_FrameDrop++;
-			return;
+			if (m_FrameDrop == OsdPipSetup.FrameDrop)
+			{
+				m_FrameDrop = 0;
+			}
+			else
+			{
+				m_FrameDrop++;
+				return;
+			}
 		}
 	}
 
@@ -229,30 +262,40 @@ void cOsdPipObject::ProcessImage(unsigned char * data, int length)
 #endif
 	}
 
-	if (decoder.Resample(m_Width, m_Height) != 0)
+	if (decoder.AspectRatio() > 0.1)
+		height = (int) ((float) m_Width / decoder.AspectRatio() * 16.0f / 15.0f + 0.5);
+	else
+		height = m_Height;
+	if (decoder.Resample(m_Width, height) != 0)
 		return;
 
 	int size;
-	size = m_Width * m_Height;
+	size = m_Width * height;
 	
 	if (OsdPipSetup.ColorDepth == kDepthGrey16)
 	{
-#if VDRVERSNUM < 10307
+#if VDRVERSNUM >= 10307
+		m_Bitmap->DrawRectangle(0, 0, m_Width - 1, (m_Height - height) / 2 - 1, m_Palette[0]);
+		m_Bitmap->DrawRectangle(0, (m_Height + height) / 2, m_Width - 1, m_Height - 1, m_Palette[0]);
+#else
 		m_Bitmap->Clear();
+		m_Bitmap->Fill(0, 0, m_Width - 1, (m_Height - height) / 2 - 1, clrBlack);
+		m_Bitmap->Fill(0, (m_Height + height) / 2, m_Width - 1, m_Height - 1, clrBlack);
 #endif
 		outputImage = decoder.PicResample()->data[0];
-		for (int y = 0; y < m_Height; y++)
+		for (int y = 0; y < height; y++)
 		{
 			for (int x = 0; x < m_Width; x++)
 			{
 				value = outputImage[y * m_Width + x];
-				value = value / 16;
-				value = value * 16;
+				value = value & 0xF0;
+				//value = value / 16;
+				//value = value * 16;
 				value = m_AlphaBase | (value << 16) | (value << 8) | value;
 #if VDRVERSNUM >= 10307
-				m_Bitmap->DrawPixel(x, y, value);
+				m_Bitmap->DrawPixel(x, y + (m_Height - height) / 2, value);
 #else
-				m_Bitmap->SetPixel(x, y, (eDvbColor) value);
+				m_Bitmap->SetPixel(x, y + (m_Height - height) / 2, (eDvbColor) value);
 #endif
 			}
 		}
@@ -261,17 +304,20 @@ void cOsdPipObject::ProcessImage(unsigned char * data, int length)
 	{
 		outputImage = decoder.PicResample()->data[0];
 #if VDRVERSNUM >= 10307
+		m_Bitmap->DrawRectangle(0, 0, m_Width - 1, m_Height - 1, m_Palette[0]);
 		for (int i = 0; i < 256; i++)
 			m_Bitmap->SetColor(i, m_Palette[i]);
+#else
+		m_Bitmap->Fill(0, 0, m_Width - 1, m_Height - 1, (eDvbColor) m_Palette[0]);
 #endif
-		for (int y = 0; y < m_Height; y++)
+		for (int y = 0; y < height; y++)
 		{
 			for (int x = 0; x < m_Width; x++)
 			{
 #if VDRVERSNUM >= 10307
-				m_Bitmap->SetIndex(x, y, outputImage[y * m_Width + x]);
+				m_Bitmap->SetIndex(x, y + (m_Height - height) / 2, outputImage[y * m_Width + x]);
 #else
-				m_Bitmap->SetPixel(x, y, (eDvbColor) m_Palette[outputImage[y * m_Width + x]]);
+				m_Bitmap->SetPixel(x, y + (m_Height - height) / 2, (eDvbColor) m_Palette[outputImage[y * m_Width + x]]);
 #endif
 			}
 		}
@@ -306,17 +352,20 @@ void cOsdPipObject::ProcessImage(unsigned char * data, int length)
 		if (OsdPipSetup.ColorDepth == kDepthColor256fix)
 		{
 #if VDRVERSNUM >= 10307
+			m_Bitmap->DrawRectangle(0, 0, m_Width - 1, m_Height - 1, m_Palette[0]);
 			for (int i = 0; i < 256; i++)
 				m_Bitmap->SetColor(i, m_Palette[i]);
+#else
+			m_Bitmap->Fill(0, 0, m_Width - 1, m_Height - 1, (eDvbColor) m_Palette[0]);
 #endif
-			for (int y = 0; y < m_Height; y++)
+			for (int y = 0; y < height; y++)
 			{
 				for (int x = 0; x < m_Width; x++)
 				{
 #if VDRVERSNUM >= 10307
-					m_Bitmap->SetIndex(x, y, outputImage[y * m_Width + x] + 1);
+					m_Bitmap->SetIndex(x, y + (m_Height - height) / 2, outputImage[y * m_Width + x] + 1);
 #else
-					m_Bitmap->SetPixel(x, y, (eDvbColor) m_Palette[outputImage[y * m_Width + x]]);
+					m_Bitmap->SetPixel(x, y + (m_Height - height) / 2, (eDvbColor) m_Palette[outputImage[y * m_Width + x]]);
 #endif
 				}
 			}
@@ -329,17 +378,20 @@ void cOsdPipObject::ProcessImage(unsigned char * data, int length)
 				m_Palette[m_PaletteStart + i] |= m_AlphaBase;
 			}
 
-			for (int i = 0; i < 256; i++)
 #if VDRVERSNUM >= 10307
+			m_Bitmap->DrawRectangle(0, 0, m_Width - 1, m_Height - 1, m_Palette[0]);
+			for (int i = 0; i < 256; i++)
 				m_Bitmap->SetColor(i, m_Palette[i]);
 #else
+			for (int i = 0; i < 256; i++)
 				m_Bitmap->SetColor(i, (eDvbColor) m_Palette[i]);
+			m_Bitmap->Fill(0, 0, m_Width - 1, m_Height - 1, (eDvbColor) m_Palette[0]);
 #endif
-			for (int y = 0; y < m_Height; y++)
+			for (int y = 0; y < height; y++)
 			{
 				for (int x = 0; x < m_Width; x++)
 				{
-					m_Bitmap->SetIndex(x, y, m_PaletteStart + outputImage[y * m_Width + x]);
+					m_Bitmap->SetIndex(x, y + (m_Height - height) / 2, m_PaletteStart + outputImage[y * m_Width + x]);
 				}
 			}
 
@@ -406,24 +458,45 @@ void cOsdPipObject::Action(void)
 			m_Reset = false;
 		}
 #endif
-		frame = m_ESBuffer->Get();
+		if (m_FrameDrop == -1)
 		{
-			if (frame && frame->Count() > 0)
+			while ((frame = m_ESBuffer->Get()) != NULL)
 			{
-				pictureType = frame->Index();
-				if ((OsdPipSetup.FrameMode == kFrameModeI && pictureType == I_FRAME) ||
-					(OsdPipSetup.FrameMode == kFrameModeIP && (pictureType == I_FRAME || pictureType == P_FRAME)) ||
-					(OsdPipSetup.FrameMode == kFrameModeIPB))
+				if (frame->Count() > 0)
 				{
-					ProcessImage(frame->Data(), frame->Count());
+					if (m_ESBuffer->Available() == frame->Count())
+						break;
+					if (OsdPipSetup.FrameMode == kFrameModeIP ||
+						OsdPipSetup.FrameMode == kFrameModeIPB)
+					{
+						decoder.Decode(frame->Data(), frame->Count());
+					}
 				}
 				m_ESBuffer->Drop(frame);
 			}
-			else
+			if (frame)
 			{
-				if (frame)
+				pictureType = frame->Index();
+				ProcessImage(frame->Data(), frame->Count());
+				m_ESBuffer->Drop(frame);
+			}
+		}
+		else
+		{
+			frame = m_ESBuffer->Get();
+			{
+				if (frame && frame->Count() > 0)
+				{
+					pictureType = frame->Index();
+					ProcessImage(frame->Data(), frame->Count());
 					m_ESBuffer->Drop(frame);
-				usleep(1);
+				}
+				else
+				{
+					if (frame)
+						m_ESBuffer->Drop(frame);
+					usleep(1);
+				}
 			}
 		}
 		if (m_ShowTime != 0)
@@ -431,8 +504,10 @@ void cOsdPipObject::Action(void)
 			if (m_ShowInfo)
 			{
 #if VDRVERSNUM >= 10307
+				ShowChannelInfo(Channels.GetByNumber(cDevice::ActualDevice()->CurrentChannel()));
 				m_Osd->DrawBitmap(m_InfoX, m_InfoY, *m_BitmapInfo);
 #else
+				ShowChannelInfo(Channels.GetByNumber(cDevice::ActualDevice()->CurrentChannel()));
 				m_Osd->SetBitmap(0, 0, *m_BitmapInfo, m_WindowInfo);
 				m_Osd->Show(m_WindowInfo);
 #endif
@@ -480,6 +555,9 @@ eOSState cOsdPipObject::ProcessKey(eKeys Key)
 		switch (Key & ~k_Repeat) {
 			case k0:		Channels.SwitchTo(m_Channel->Number());
 			case kBack: return osEnd;
+
+			case kRed:  SwapChannels();
+				break;
 
 			case k1...k9:
 #if VDRVERSNUM >= 10307
@@ -571,7 +649,9 @@ eOSState cOsdPipObject::ProcessKey(eKeys Key)
 					if (m_ShowTime != 0) {
 						m_ShowTime -= 2;
 					} else {
-						ShowChannelInfo(Channels.GetByNumber(cDevice::ActualDevice()->CurrentChannel()));
+						//ShowChannelInfo(Channels.GetByNumber(cDevice::ActualDevice()->CurrentChannel()));
+						time(&m_ShowTime);
+						m_ShowInfo = true;
 					}
 				}
 				break;
@@ -592,7 +672,11 @@ void cOsdPipObject::ChannelSwitch(const cDevice * device, int channelNumber)
 	if (!m_Ready)
 		return;
 	if (OsdPipSetup.ShowInfo)
-		ShowChannelInfo(Channels.GetByNumber(device->CurrentChannel()));
+	{
+		//ShowChannelInfo(Channels.GetByNumber(device->CurrentChannel()));
+		time(&m_ShowTime);
+		m_ShowInfo = true;
+	}
 }
 
 void cOsdPipObject::ShowChannelInfo(const cChannel * channel, bool show)
@@ -665,6 +749,12 @@ void cOsdPipObject::ShowChannelInfo(const cChannel * channel, bool show)
 		if (show)
 		{
 			m_Palette[0] = 0xFD000000;
+			m_Palette[255] = 0x00FFFFFF;
+			m_BitmapInfo->DrawRectangle(0, 0, OsdPipSetup.InfoWidth - 1, 60 - 1, m_Palette[0]);
+			for (int i = 0; i < 256; i++)
+				m_BitmapInfo->SetColor(i, m_Palette[i]);
+			m_Osd->DrawBitmap(m_InfoX, m_InfoY, *m_BitmapInfo);
+			m_Osd->Flush();
 			m_Palette[255] = 0xFDFFFFFF;
 			m_BitmapInfo->DrawRectangle(0, 0, OsdPipSetup.InfoWidth - 1, 60 - 1, m_Palette[0]);
 			for (int i = 0; i < 256; i++)
@@ -677,17 +767,19 @@ void cOsdPipObject::ShowChannelInfo(const cChannel * channel, bool show)
 		}
 		else
 		{
-			m_Palette[0] = 0x00000000;
+			m_Palette[0] = 0xFD000000;
 			m_Palette[255] = 0x00FFFFFF;
 			m_BitmapInfo->DrawRectangle(0, 0, OsdPipSetup.InfoWidth - 1, 60 - 1, m_Palette[0]);
 			for (int i = 0; i < 256; i++)
 				m_BitmapInfo->SetColor(i, m_Palette[i]);
+			m_BitmapInfo->DrawRectangle(0, 0, OsdPipSetup.InfoWidth - 1, 30 - 1, m_Palette[255]);
+			m_BitmapInfo->DrawRectangle(0, 30, OsdPipSetup.InfoWidth - 1, 60 - 1, m_Palette[255]);
 		}
 	}
 #else
 	if (OsdPipSetup.ColorDepth != kDepthGrey16)
-	for (int i = 0; i < 256; i++)
-		m_BitmapInfo->SetColor(i, (eDvbColor) m_Palette[i]);
+		for (int i = 0; i < 256; i++)
+			m_BitmapInfo->SetColor(i, (eDvbColor) m_Palette[i]);
 	m_BitmapInfo->Fill(0, 0, OsdPipSetup.InfoWidth, 60, (eDvbColor) 0xFF000000);
 	m_BitmapInfo->Text(0, 0, line1, (eDvbColor) 0xFFFFFFFF, (eDvbColor) 0xFF000000);
 	m_BitmapInfo->Text(0, 30, line2, (eDvbColor) 0xFFFFFFFF, (eDvbColor) 0xFF000000);

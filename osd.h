@@ -60,6 +60,8 @@ private:
 	void ProcessImage(unsigned char * data, int length);
 
 	void ShowChannelInfo(const cChannel * channel, bool show = true);
+	void Stop(void);
+	void SwapChannels(void);
 protected:
 	virtual void Action(void);
 	virtual void ChannelSwitch(const cDevice * device, int channelNumber);

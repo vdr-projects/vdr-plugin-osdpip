@@ -35,7 +35,7 @@ public:
 	int ConvertToRGB();
 	AVFrame * PicResample() { return m_PicResample; }
 	AVFrame * PicConvert() { return m_PicConvert; }
-	float AspectRatio() { return m_Context->aspect_ratio; }
+	double AspectRatio();
 };
 
 #endif // VDR_OSDPIP_DECODER_H

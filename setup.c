@@ -6,7 +6,7 @@
 
 #include <vdr/config.h>
 
-#include "config.h"
+#include "setup.h"
 
 #if VDRVERSNUM < 10307
 # if MAXNUMCOLORS < 256
@@ -32,10 +32,12 @@ const int kColorDepths = 4;
 
 const int kSizes = 6;
 const int kFrameModes = 3;
+const int kFrameDrops = 4;
 const int kInfoPositions = 4;
 
 const char * ColorDepthItems[] = {NULL, NULL, NULL, NULL, NULL};   // initialized later
 const char * InfoPositionItems[] = {NULL, NULL, NULL, NULL, NULL}; // initialized later
+const char * FrameDropItems[] = {NULL, NULL, NULL, NULL, NULL}; // initialized later
 
 const char * SizeItems[] = {
 	"120x96",
@@ -66,7 +68,7 @@ cOsdPipSetup::cOsdPipSetup(void)
 	ColorDepth = kDepthGrey16;
 	Size = 2;
 	FrameMode = kFrameModeI;
-	FrameDrop = 0;
+	FrameDrop = -1;
 	SwapFfmpeg = 1;
 	ShowInfo = 1;
 	InfoWidth = 400;
@@ -96,6 +98,7 @@ bool cOsdPipSetup::SetupParse(const char *Name, const char *Value)
 cOsdPipSetupPage::cOsdPipSetupPage(void)
 {
 	m_NewOsdPipSetup = OsdPipSetup;
+	m_NewOsdPipSetup.FrameDrop += 1;
 
 	ColorDepthItems[0] = tr("Greyscale (16)");
 	ColorDepthItems[1] = tr("Greyscale (256)");
@@ -107,6 +110,11 @@ cOsdPipSetupPage::cOsdPipSetupPage(void)
 	InfoPositionItems[2] = tr("bottom left");
 	InfoPositionItems[3] = tr("bottom right");
 
+	FrameDropItems[0] = tr("automatic");
+	FrameDropItems[1] = tr("none");
+	FrameDropItems[2] = tr("1 frame");
+	FrameDropItems[3] = tr("2 frames");
+
 	Add(new cMenuEditIntItem(tr("X Position"), &m_NewOsdPipSetup.XPosition, 0, 600));
 	Add(new cMenuEditIntItem(tr("Y Position"), &m_NewOsdPipSetup.YPosition, 0, 470));
 	Add(new cMenuEditIntItem(tr("Crop left"), &m_NewOsdPipSetup.CropLeft, 0, 80));
@@ -116,7 +124,7 @@ cOsdPipSetupPage::cOsdPipSetupPage(void)
 	Add(new cMenuEditStraItem(tr("Color depth"), &m_NewOsdPipSetup.ColorDepth, kColorDepths, ColorDepthItems));
 	Add(new cMenuEditStraItem(tr("Size"), &m_NewOsdPipSetup.Size, kSizes, SizeItems));
 	Add(new cMenuEditStraItem(tr("Frames to display"), &m_NewOsdPipSetup.FrameMode, kFrameModes, FrameModeItems));
-	Add(new cMenuEditIntItem(tr("Drop frames"), &m_NewOsdPipSetup.FrameDrop, 0, 2));
+	Add(new cMenuEditStraItem(tr("Drop frames"), &m_NewOsdPipSetup.FrameDrop, kFrameDrops, FrameDropItems));
 	Add(new cMenuEditBoolItem(tr("Swap FFMPEG output"), &m_NewOsdPipSetup.SwapFfmpeg));
 	Add(new cMenuEditBoolItem(tr("Show info window"), &m_NewOsdPipSetup.ShowInfo));
 	Add(new cMenuEditIntItem(tr("Info window width"), &m_NewOsdPipSetup.InfoWidth, 200, 600));
@@ -130,6 +138,7 @@ cOsdPipSetupPage::~cOsdPipSetupPage()
 void cOsdPipSetupPage::Store(void)
 {
 	OsdPipSetup = m_NewOsdPipSetup;
+	OsdPipSetup.FrameDrop -= 1;
 
 	SetupStore("XPosition", OsdPipSetup.XPosition);
 	SetupStore("YPosition", OsdPipSetup.YPosition);

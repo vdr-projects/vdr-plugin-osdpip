@@ -583,6 +583,102 @@ const tI18nPhrase Phrases[] = {
 # endif
 #endif
 	},
+	{
+		"automatic", // English
+		"automatisch", // Deutsch
+		"", // Slovenski
+		"", // Italiano
+		"", // Nederlands
+		"", // Português
+		"", // Français
+		"", // Norsk
+		"automaattisesti", // Suomi
+		"", // Polski
+		"", // Español
+		"", // Ellinika
+		"", // Svenska
+		"", // Romaneste
+		"", // Magyar
+		"", // Catala
+#if VDRVERSNUM > 10302
+		"", // Russian
+# if VDRVERSNUM > 10307
+		"", // Croatian
+# endif
+#endif
+	},
+	{
+		"none", // English
+		"keine", // Deutsch
+		"", // Slovenski
+		"", // Italiano
+		"", // Nederlands
+		"", // Português
+		"", // Français
+		"", // Norsk
+		"ei", // Suomi
+		"", // Polski
+		"", // Español
+		"", // Ellinika
+		"", // Svenska
+		"", // Romaneste
+		"", // Magyar
+		"", // Catala
+#if VDRVERSNUM > 10302
+		"", // Russian
+# if VDRVERSNUM > 10307
+		"", // Croatian
+# endif
+#endif
+	},
+	{
+		"1 frame", // English
+		"1 Frame", // Deutsch
+		"", // Slovenski
+		"", // Italiano
+		"", // Nederlands
+		"", // Português
+		"", // Français
+		"", // Norsk
+		"1 kehys", // Suomi
+		"", // Polski
+		"", // Español
+		"", // Ellinika
+		"", // Svenska
+		"", // Romaneste
+		"", // Magyar
+		"", // Catala
+#if VDRVERSNUM > 10302
+		"", // Russian
+# if VDRVERSNUM > 10307
+		"", // Croatian
+# endif
+#endif
+	},
+	{
+		"2 frames", // English
+		"2 Frames", // Deutsch
+		"", // Slovenski
+		"", // Italiano
+		"", // Nederlands
+		"", // Português
+		"", // Français
+		"", // Norsk
+		"2 kehystä", // Suomi
+		"", // Polski
+		"", // Español
+		"", // Ellinika
+		"", // Svenska
+		"", // Romaneste
+		"", // Magyar
+		"", // Catala
+#if VDRVERSNUM > 10302
+		"", // Russian
+# if VDRVERSNUM > 10307
+		"", // Croatian
+# endif
+#endif
+	},
 	{ NULL }
 };
 

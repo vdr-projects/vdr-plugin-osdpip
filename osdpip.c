@@ -14,12 +14,12 @@ extern "C"
 }
 
 #include "osd.h"
-#include "config.h"
+#include "setup.h"
 #include "i18n.h"
 
 #include <vdr/plugin.h>
 
-static const char *VERSION        = "0.0.5";
+static const char *VERSION        = "0.0.6";
 static const char *DESCRIPTION    = "OSD Picture-in-Picture";
 static const char *MAINMENUENTRY  = "Picture-in-Picture";
 

@@ -1,6 +1,20 @@
 VDR Plugin 'osdpip' Revision History
 ------------------------------------
 
+2004-08-01: Version 0.0.6
+- added channel swapping. It is now possible to swap the currently viewed
+  channel with the pip channel by pressing the red key.
+- added support for other aspect ratios than 4:3. Image is now correctly
+  scaled and black border is added when necessary.
+- added automatic frame dropping that always takes the last frame from
+  the ringbuffer.
+- added -D_GNU_SOURCE to DEFINES in Makefile
+- fixed a memory leak: missing deletion of frame ringbuffer
+- fixed a memory leak: missing frame deletion in case of a full ringbuffer
+- small speedup through just putting relevant frames to ringbuffer
+- updated finnish translations (thanks to Rolf Ahrenberg)
+
+
 2004-06-13: Version 0.0.5 (written by Andreas Regel)
 - added support for VDR version 1.3.7 and later (VDR 1.2.6 is still
   supported, no guarantee for 1.3.0-1.3.6)

@@ -22,7 +22,7 @@ down now, watching the progress of the previous channel in the box. Quality is
 not too good yet, and only I-Frames are displayed. 
 The plugin supports four modes:
  - greyscaled (16 shades of grey)
- - greyscaled (128 shades of grey)
+ - greyscaled (256 shades of grey)
  - 256 colors with fixed palette
  - 128 colors with variable palette
 The first mode works with an ordinary vdr installation. If you want to use the
@@ -110,6 +110,7 @@ Controls:
 Up/Down    Switch Channel up/down
 1-4,6-9    Move box around like with cursor keys
 0          Switch back to PiP channel and exit PiP
+Red        Swap PiP channel with currently viewed channel
 Back       Exit PiP without switching back
 Ok         Show/hide channel info window
 

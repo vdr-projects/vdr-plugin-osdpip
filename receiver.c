@@ -6,6 +6,7 @@
 
 #include "receiver.h"
 #include "pes.h"
+#include "setup.h"
 
 #include <vdr/channels.h>
 #include <vdr/remux.h>
@@ -66,7 +67,16 @@ void cOsdPipReceiver::Action(void)
 
 			if (p) {
 				if (NewPictureType != NO_PICTURE) {
-					m_ESBuffer->Put(new cFrame(VideoBuffer, VideoBufferPos, ftVideo, CurPictureType));
+					if ((OsdPipSetup.FrameMode == kFrameModeI && CurPictureType == I_FRAME) ||
+						(OsdPipSetup.FrameMode == kFrameModeIP && (CurPictureType == I_FRAME || CurPictureType == P_FRAME)) ||
+						(OsdPipSetup.FrameMode == kFrameModeIPB))
+					{
+						cFrame * frame = new cFrame(VideoBuffer, VideoBufferPos, ftVideo, CurPictureType);
+						if (!m_ESBuffer->Put(frame))
+						{
+							delete frame;
+						}
+					}
 					CurPictureType = NewPictureType;
 					VideoBufferPos = 0;
 				}

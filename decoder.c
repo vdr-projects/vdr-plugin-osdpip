@@ -8,7 +8,7 @@
 #include <stdlib.h>
 
 #include "decoder.h"
-#include "config.h"
+#include "setup.h"
 
 
 int cDecoder::Open()
@@ -96,5 +96,11 @@ int cDecoder::ConvertToRGB()
 				m_Width, m_Height);
 
 	return 0;
+}
+
+double cDecoder::AspectRatio()
+{
+	//printf("%d %d %f\n", m_Context->width, m_Context->height, m_Context->aspect_ratio);
+	return m_Context->aspect_ratio;
 }
 

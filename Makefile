@@ -44,10 +44,11 @@ PACKAGE = vdr-$(ARCHIVE)
 INCLUDES += -I$(VDRDIR)/include -I$(DVBDIR)/include -I. -I$(FFMDIR)/libavcodec
 LIBS     = -L$(FFMDIR)/libavcodec -lavcodec
 DEFINES += -DPLUGIN_NAME_I18N='"$(PLUGIN)"'
+DEFINES += -D_GNU_SOURCE
 
 ### The object files (add further files here):
 
-OBJS = $(PLUGIN).o osd.o receiver.o config.o i18n.o pes.o quantize.o decoder.o
+OBJS = $(PLUGIN).o osd.o receiver.o setup.o i18n.o pes.o quantize.o decoder.o
 
 ifdef FFMPEG_STATIC
 	DEFINES += -DHAVE_FFMPEG_STATIC
