@@ -7,11 +7,12 @@
  */
 
 #include "osd.h"
+#include "config.h"
 #include "i18n.h"
 
 #include <vdr/plugin.h>
 
-static const char *VERSION        = "0.0.1";
+static const char *VERSION        = "0.0.2";
 static const char *DESCRIPTION    = "OSD Picture-in-Picture";
 static const char *MAINMENUENTRY  = "Picture-in-Picture";
 
@@ -75,11 +76,11 @@ cOsdObject *cPluginOsdpip::MainMenuAction(void) {
 }
 
 cMenuSetupPage *cPluginOsdpip::SetupMenu(void) {
-  return NULL;
+  return new cOsdPipSetupPage;
 }
 
 bool cPluginOsdpip::SetupParse(const char *Name, const char *Value) {
-  return false;
+  return OsdPipSetup.SetupParse(Name, Value);
 }
 
 VDRPLUGINCREATOR(cPluginOsdpip); // Don't touch this!

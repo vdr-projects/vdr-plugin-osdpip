@@ -20,9 +20,11 @@ private:
 	cOsdPipReceiver *m_Receiver;
 	const cChannel *m_Channel;
 	tWindowHandle m_Window;
+	cBitmap *m_Bitmap;
 
 	bool m_Active;
-	int m_Xpos, m_Ypos;
+	bool m_Ready;
+	int m_Width, m_Height;
 
 protected:
 	virtual void Action(void);

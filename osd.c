@@ -1,10 +1,11 @@
 #include "osd.h"
 #include "receiver.h"
+#include "config.h"
 
 #include <vdr/ringbuffer.h>
 #include <vdr/remux.h>
 
-const uint palette[256] = {
+const uint rgb256[256] = {
 	0xff000000, 0xff400000, 0xff800000, 0xffc00000, 0xff002000, 0xff402000, 
 	0xff802000, 0xffc02000, 0xff004000, 0xff404000, 0xff804000, 0xffc04000, 
 	0xff006000, 0xff406000, 0xff806000, 0xffc06000, 0xff008000, 0xff408000, 
@@ -50,14 +51,62 @@ const uint palette[256] = {
 	0xff00e0e0, 0xff40e0e0, 0xff80e0e0, 0xffc0e0e0, 
 };
 
+const uint grey256[256] = {
+	0xff000000, 0xff000000, 0xff000000, 0xff000000, 0xff000000, 0xff000000,
+	0xff000000, 0xff000000, 0xff000000, 0xff000000, 0xff000000, 0xff000000,
+	0xff000000, 0xff000000, 0xff000000, 0xff000000, 0xff111111, 0xff111111,
+	0xff111111, 0xff111111, 0xff111111, 0xff111111, 0xff111111, 0xff111111,
+	0xff111111, 0xff111111, 0xff111111, 0xff111111, 0xff111111, 0xff111111,
+	0xff111111, 0xff111111, 0xff222222, 0xff222222, 0xff222222, 0xff222222,
+	0xff222222, 0xff222222, 0xff222222, 0xff222222, 0xff222222, 0xff222222,
+	0xff222222, 0xff222222, 0xff222222, 0xff222222, 0xff222222, 0xff222222,
+	0xff333333, 0xff333333, 0xff333333, 0xff333333, 0xff333333, 0xff333333,
+	0xff333333, 0xff333333, 0xff333333, 0xff333333, 0xff333333, 0xff333333,
+	0xff333333, 0xff333333, 0xff333333, 0xff333333, 0xff444444, 0xff444444,
+	0xff444444, 0xff444444, 0xff444444, 0xff444444, 0xff444444, 0xff444444,
+	0xff444444, 0xff444444, 0xff444444, 0xff444444, 0xff444444, 0xff444444,
+	0xff444444, 0xff444444, 0xff555555, 0xff555555, 0xff555555, 0xff555555,
+	0xff555555, 0xff555555, 0xff555555, 0xff555555, 0xff555555, 0xff555555,
+	0xff555555, 0xff555555, 0xff555555, 0xff555555, 0xff555555, 0xff555555,
+	0xff666666, 0xff666666, 0xff666666, 0xff666666, 0xff666666, 0xff666666,
+	0xff666666, 0xff666666, 0xff666666, 0xff666666, 0xff666666, 0xff666666,
+	0xff666666, 0xff666666, 0xff666666, 0xff666666, 0xff777777, 0xff777777,
+	0xff777777, 0xff777777, 0xff777777, 0xff777777, 0xff777777, 0xff777777,
+	0xff777777, 0xff777777, 0xff777777, 0xff777777, 0xff777777, 0xff777777,
+	0xff777777, 0xff777777, 0xff888888, 0xff888888, 0xff888888, 0xff888888,
+	0xff888888, 0xff888888, 0xff888888, 0xff888888, 0xff888888, 0xff888888,
+	0xff888888, 0xff888888, 0xff888888, 0xff888888, 0xff888888, 0xff888888,
+	0xff999999, 0xff999999, 0xff999999, 0xff999999, 0xff999999, 0xff999999,
+	0xff999999, 0xff999999, 0xff999999, 0xff999999, 0xff999999, 0xff999999,
+	0xff999999, 0xff999999, 0xff999999, 0xff999999, 0xffaaaaaa, 0xffaaaaaa,
+	0xffaaaaaa, 0xffaaaaaa, 0xffaaaaaa, 0xffaaaaaa, 0xffaaaaaa, 0xffaaaaaa,
+	0xffaaaaaa, 0xffaaaaaa, 0xffaaaaaa, 0xffaaaaaa, 0xffaaaaaa, 0xffaaaaaa,
+	0xffaaaaaa, 0xffaaaaaa, 0xffbbbbbb, 0xffbbbbbb, 0xffbbbbbb, 0xffbbbbbb,
+	0xffbbbbbb, 0xffbbbbbb, 0xffbbbbbb, 0xffbbbbbb, 0xffbbbbbb, 0xffbbbbbb,
+	0xffbbbbbb, 0xffbbbbbb, 0xffbbbbbb, 0xffbbbbbb, 0xffbbbbbb, 0xffbbbbbb,
+	0xffcccccc, 0xffcccccc, 0xffcccccc, 0xffcccccc, 0xffcccccc, 0xffcccccc,
+	0xffcccccc, 0xffcccccc, 0xffcccccc, 0xffcccccc, 0xffcccccc, 0xffcccccc,
+	0xffcccccc, 0xffcccccc, 0xffcccccc, 0xffcccccc, 0xffdddddd, 0xffdddddd,
+	0xffdddddd, 0xffdddddd, 0xffdddddd, 0xffdddddd, 0xffdddddd, 0xffdddddd,
+	0xffdddddd, 0xffdddddd, 0xffdddddd, 0xffdddddd, 0xffdddddd, 0xffdddddd,
+	0xffdddddd, 0xffdddddd, 0xffeeeeee, 0xffeeeeee, 0xffeeeeee, 0xffeeeeee,
+	0xffeeeeee, 0xffeeeeee, 0xffeeeeee, 0xffeeeeee, 0xffeeeeee, 0xffeeeeee,
+	0xffeeeeee, 0xffeeeeee, 0xffeeeeee, 0xffeeeeee, 0xffeeeeee, 0xffeeeeee,
+	0xffffffff, 0xffffffff, 0xffffffff, 0xffffffff, 0xffffffff, 0xffffffff,
+	0xffffffff, 0xffffffff, 0xffffffff, 0xffffffff, 0xffffffff, 0xffffffff,
+	0xffffffff, 0xffffffff, 0xffffffff, 0xffffffff,
+};
+
 cOsdPipObject::cOsdPipObject(cDevice *Device, const cChannel *Channel):
 		cOsdObject(true) {
 	m_Channel = Channel;
 	m_Osd = NULL;
 	m_ESBuffer = new cRingBufferLinear(MEGABYTE(3), 0, true);
 
-	m_Xpos = 25;
-	m_Ypos = 25;
+	m_Active = false;
+	m_Ready = false;
+	m_Width = m_Height = -1;
+	m_Bitmap = NULL;
 
 	Device->SwitchChannel(m_Channel, false);
 	m_Receiver = new cOsdPipReceiver(m_Channel, m_ESBuffer);
@@ -71,6 +120,8 @@ cOsdPipObject::~cOsdPipObject() {
 	}
 
 	delete m_Receiver;
+	if (m_Bitmap != NULL)
+		delete m_Bitmap;
 	if (m_Osd != NULL)
 		delete m_Osd;
 }
@@ -85,7 +136,6 @@ void cOsdPipObject::Action(void) {
 	mpeg2_state_t state;
 
 	while (m_Active) {
-		cBitmap frame(312, 236, 8);
 		const uchar *block;
 		int recvd;
 
@@ -101,22 +151,41 @@ void cOsdPipObject::Action(void) {
       break;
 
     case STATE_SEQUENCE:
+			if (!m_Ready) {
+				m_Width = (info->sequence->width - OsdPipSetup.CropLeft 
+						- OsdPipSetup.CropRight) / OsdPipSetup.ZoomFactor;
+				m_Height = (info->sequence->height - OsdPipSetup.CropTop
+						- OsdPipSetup.CropBottom) / OsdPipSetup.ZoomFactor;
+				m_Window = m_Osd->Create(OsdPipSetup.XPosition, OsdPipSetup.YPosition, 
+						m_Width, m_Height, OsdPipSetup.ColorDepth == 0 ? 4 : 8);
+				m_Bitmap = new cBitmap(m_Width, m_Height, 
+						OsdPipSetup.ColorDepth == 0 ? 4 : 8);
+				m_Ready = true;
+			}
       mpeg2_convert(handle, mpeg2convert_rgb8, NULL);
       break;
 
     case STATE_SLICE:
     case STATE_END:
     case STATE_INVALID_END:
-      if (info->display_fbuf && (info->display_picture->flags 
+      if (m_Ready && info->display_fbuf && (info->display_picture->flags 
 					& PIC_MASK_CODING_TYPE) == PIC_FLAG_CODING_TYPE_I) {
-				for (int x = 0; x < 312; ++x) {
-					for (int y = 0; y < 236; ++y) {
-						uint8_t *ptr = info->display_fbuf->buf[0] + ((50 + y * 2) 
-								* info->sequence->width + (50 + x * 2));
-						frame.SetPixel(x, y, (eDvbColor)palette[(int)*ptr]);
+				int px = OsdPipSetup.CropLeft;
+				int py = OsdPipSetup.CropRight;
+				for (int x = 0; x < m_Width; ++x) {
+					for (int y = 0; y < m_Height; ++y) {
+						uint8_t idx = info->display_fbuf->buf[0][py 
+								* info->sequence->width + px];
+						uint col = OsdPipSetup.ColorDepth == 0 ? grey256[idx] : rgb256[idx];
+								
+						m_Bitmap->SetPixel(x, y, (eDvbColor)col);
+						py += OsdPipSetup.ZoomFactor;
 					}
+					px += OsdPipSetup.ZoomFactor;
+					py = 0;
 				}
-				m_Osd->SetBitmap(m_Xpos, m_Ypos, frame);
+				m_Osd->SetBitmap(OsdPipSetup.XPosition, OsdPipSetup.YPosition, 
+						*m_Bitmap);
 				m_Osd->Flush();
       }
       break;
@@ -131,11 +200,8 @@ void cOsdPipObject::Action(void) {
 
 void cOsdPipObject::Show(void) {
 	m_Osd = cOsd::OpenRaw(0, 0);
-	m_Window = m_Osd->Create(m_Xpos, m_Ypos, 312, 236, 8, false);
-	if (m_Osd) {
-		m_Osd->Clear();
+	if (m_Osd)
 		Start();
-	}
 }
 
 eOSState cOsdPipObject::ProcessKey(eKeys Key) {
@@ -147,44 +213,42 @@ eOSState cOsdPipObject::ProcessKey(eKeys Key) {
 
 		case k1...k9:
 			switch (Key & ~k_Repeat) {
-			case k1: 
-				m_Xpos = 25; 
-				m_Ypos = 25; 
+			case k1:
+				if (OsdPipSetup.XPosition > 9) OsdPipSetup.XPosition -= 10;
+				if (OsdPipSetup.YPosition > 9) OsdPipSetup.YPosition -= 10;
 				break;
-			case k2: 
-				m_Xpos = (Setup.OSDwidth * cOsd::CellWidth()) / 2 - 75; 
-				m_Ypos = 25;
+			case k2:
+				if (OsdPipSetup.YPosition > 9) OsdPipSetup.YPosition -= 10;
 				break;
-			case k3: 
-				m_Xpos = (Setup.OSDwidth * cOsd::CellWidth()) - 175; 
-				m_Ypos = 25;
+			case k3:
+				if (OsdPipSetup.XPosition < Setup.OSDwidth * cOsd::CellWidth()) 
+					OsdPipSetup.XPosition += 10;
+				if (OsdPipSetup.YPosition > 9) OsdPipSetup.YPosition -= 10;
 				break;
-			case k4: 
-				m_Xpos = 25;
-				m_Ypos = (Setup.OSDheight * cOsd::LineHeight()) / 2 - 55;
-				break;
-			case k5:
-				m_Xpos = (Setup.OSDwidth * cOsd::CellWidth()) / 2 - 75; 
-				m_Ypos = (Setup.OSDheight * cOsd::LineHeight()) / 2 - 55;
+			case k4:
+				if (OsdPipSetup.XPosition > 9) OsdPipSetup.XPosition -= 10;
 				break;
 			case k6:
-				m_Xpos = (Setup.OSDwidth * cOsd::CellWidth()) - 155; 
-				m_Ypos = (Setup.OSDheight * cOsd::LineHeight()) / 2 - 55;
+				if (OsdPipSetup.XPosition < Setup.OSDwidth * cOsd::CellWidth()) 
+					OsdPipSetup.XPosition += 10;
 				break;
 			case k7:
-				m_Xpos = 25;
-				m_Ypos = (Setup.OSDheight * cOsd::LineHeight()) - 105;
+				if (OsdPipSetup.XPosition > 9) OsdPipSetup.XPosition -= 10;
+				if (OsdPipSetup.YPosition < Setup.OSDheight * cOsd::LineHeight()) 
+					OsdPipSetup.YPosition += 10;
 				break;
-			case k8:	
-				m_Xpos = (Setup.OSDwidth * cOsd::CellWidth()) / 2 - 75; 
-				m_Ypos = (Setup.OSDheight * cOsd::LineHeight()) - 105;
+			case k8:
+				if (OsdPipSetup.YPosition < Setup.OSDheight * cOsd::LineHeight()) 
+					OsdPipSetup.YPosition += 10;
 				break;
 			case k9:
-				m_Xpos = (Setup.OSDwidth * cOsd::CellWidth()) - 175; 
-				m_Ypos = (Setup.OSDheight * cOsd::LineHeight()) - 105;
+				if (OsdPipSetup.XPosition < Setup.OSDwidth * cOsd::CellWidth()) 
+					OsdPipSetup.XPosition += 10;
+				if (OsdPipSetup.YPosition < Setup.OSDheight * cOsd::LineHeight()) 
+					OsdPipSetup.YPosition += 10;
 				break;
 			}
-			m_Osd->Relocate(m_Window, m_Xpos, m_Ypos);
+			m_Osd->Relocate(m_Window, OsdPipSetup.XPosition, OsdPipSetup.YPosition);
 			break;
 
 		case kUp:

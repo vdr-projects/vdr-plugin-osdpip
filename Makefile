@@ -16,7 +16,7 @@ VERSION = $(shell grep 'static const char \*VERSION *=' $(PLUGIN).c | awk '{ pri
 ### The C++ compiler and options:
 
 CXX      ?= g++
-CXXFLAGS ?= -O2 -Wall -Woverloaded-virtual
+CXXFLAGS ?= -g -O2 -Wall -Woverloaded-virtual
 
 ### The directory environment:
 
@@ -46,7 +46,7 @@ DEFINES += -DPLUGIN_NAME_I18N='"$(PLUGIN)"'
 
 ### The object files (add further files here):
 
-OBJS = $(PLUGIN).o osd.o receiver.o i18n.o \
+OBJS = $(PLUGIN).o osd.o receiver.o config.o i18n.o \
   \
   remux/tsremux.o remux/ts2ps.o remux/ts2es.o
 

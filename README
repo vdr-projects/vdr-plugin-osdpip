@@ -20,8 +20,21 @@ Description:
 OSD Picture-in-Picture is a PlugIn that displays the current channel in a 
 small box on the screen (default upper right corner). You can switch up and 
 down now, watching the progress of the previous channel in the box. Quality is 
-not too good yet, and only I-Frames are displayed. You'll need to upgrade your
-VDR to support a 256 color OSD with the provided patching instruction.
+not too good yet, and only I-Frames are displayed. 
+From 0.0.2 on, the plugin supports two modes: grayscaled and 256 colored. If 
+you want 256 colors, you'll need to upgrade your VDR to support a 256 color OSD
+with the provided patching instruction. You can choose the color depth in the 
+setup menu. If you didn't patch VDR appropriately, you'll only be able to choose
+grayscaled mode.
+Also by 0.0.2, the plugin has the possibility to choose the PiP size (in the 
+setup menu in factors of 1/x) and position (by moving it around using number 
+keys) as well as crop dimensions.
+
+ATTENTION: To use PiP size factor 2 in 256 color mode, you need to set all crop
+values to >50 pixels.
+
+ATTENTION: To have the position saved, you have to enter the plugin's setup menu
+and hit the ok button.
 
 
 Installation:
@@ -38,7 +51,7 @@ cd ../..
 Now, you have to call your favourite editor to open osdbase.h and jump to line
 number 16. I don't provide a patch here because some patches already touch that
 area. Well this one's easy, though. Just increase the number of colors in this
-line to 256.
+line to 256. If you don't want 256 color support, you can skip this part.
 
 #define MAXNUMCOLORS 256
 
@@ -51,7 +64,7 @@ make [options, if necessary] plugins
 Controls:
 
 Up/Down    Switch Channel up/down
-1-9        Set Box Position
+1-4,6-9    Move box around like with cursor keys
 0          Switch back to PiP channel and exit PiP
 Back       Exit PiP without switching back
 
