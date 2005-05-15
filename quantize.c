@@ -46,13 +46,8 @@ cQuantizeFixed::cQuantizeFixed() {
 	for (int r = 0; r < redLevelCount; r++) {
 		for (int g = 0; g < greenLevelCount; g++) {
 			for (int b = 0; b < blueLevelCount; b++) {
-#if VDRVERSNUM >= 10307
 				paletteOutput[r * greenLevelCount * blueLevelCount + g * blueLevelCount + b] =
 					(redLevels[r] << 16) | (greenLevels[g] << 8) | blueLevels[b];
-#else
-				paletteOutput[r * greenLevelCount * blueLevelCount + g * blueLevelCount + b] =
-					(blueLevels[b] << 16) | (greenLevels[g] << 8) | redLevels[r];
-#endif
 			}
 		}
 	}
@@ -188,22 +183,12 @@ int cQuantizeWu::Quantize(unsigned char * input, int size, int colors)
 		weight = Vol(&cube[k], wt);
 		if (weight)
 		{
-#if VDRVERSNUM >= 10307
 #ifdef NOINVERT
 			palette[k * 4 + 2] = (Vol(&cube[k], mb) / weight) WEIG;
 			palette[k * 4 + 0] = (Vol(&cube[k], mr) / weight) WEIG;
 #else
 			palette[k * 4 + 0] = (Vol(&cube[k], mb) / weight) WEIG;
 			palette[k * 4 + 2] = (Vol(&cube[k], mr) / weight) WEIG;
-#endif
-#else
-#ifdef NOINVERT
-			palette[k * 4 + 2] = (Vol(&cube[k], mr) / weight) WEIG;
-			palette[k * 4 + 0] = (Vol(&cube[k], mb) / weight) WEIG;
-#else
-			palette[k * 4 + 0] = (Vol(&cube[k], mr) / weight) WEIG;
-			palette[k * 4 + 2] = (Vol(&cube[k], mb) / weight) WEIG;
-#endif
 #endif
 			palette[k * 4 + 1] = (Vol(&cube[k], mg) / weight) WEIG;
 		}

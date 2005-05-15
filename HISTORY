@@ -1,14 +1,41 @@
 VDR Plugin 'osdpip' Revision History
 ------------------------------------
 
-2004-10-26: Version 0.0.7
+2005-05-15: Version 0.0.8 (written by Andreas Regel)
+- Added Navigation through channel in a way like with ordinary VDR. Use
+  the Left/Right keys to select channel groups, OK to choose one or the
+  number keys to directly enter a channel number. All this only works
+  with enabled info window.
+- Extended the info window to contain more information. The amount of
+  information shown can be chosen through the setup menu. This directly
+  affects the height of the info window.
+- Using the info window to show vdr messages if they occur.
+- Changed the manner the moving of the PiP window works. Now move mode
+  is enabled or disabled by pressing the green button. In move mode,
+  the cursor keys can be used to move the PiP window.
+- Added some more predefined PiP window sizes. You have to reset your
+  size in setup menu.
+- Added support for ffmpeg 0.4.9 (should work with 0.4.8, too)
+- Updated finnish translations (thanks to Rolf Ahrenberg)
+- Cleaned up, dropped support for vdr versions older than 1.3.8
 
+
+2005-02-03: Version 0.0.7.2
+- adapted to VDR 1.3.19+ (should work with older versions, too)
+
+
+2005-01-09: Version 0.0.7.1
+- adapted to VDR 1.3.18+ (should work with older versions, too)
+
+
+2004-10-26: Version 0.0.7
 - adapted to VDR 1.3.13+ (should work with older versions, too)
 
 
-2004-08-01: Version 0.0.6
+2004-08-01: Version 0.0.6 (written by Andreas Regel)
 - added channel swapping. It is now possible to swap the currently viewed
-  channel with the pip channel by pressing the red key.
+  channel with the pip channel by pressing the red key. (thanks to Sascha
+  Volkenandt)
 - added support for other aspect ratios than 4:3. Image is now correctly
   scaled and black border is added when necessary.
 - added automatic frame dropping that always takes the last frame from

@@ -15,6 +15,7 @@
 #include <vdr/receiver.h>
 
 #include "decoder.h"
+#include "osd_info.h"
 
 class cRingBufferFrame;
 class cOsdPipReceiver;
@@ -22,31 +23,17 @@ class cQuantize;
 
 class cOsdPipObject: public cOsdObject, public cThread, public cStatus {
 private:
-#if VDRVERSNUM >= 10307
 	cOsd *m_Osd;
-#else
-	cOsdBase *m_Osd;
-	tWindowHandle m_Window;
-	tWindowHandle m_WindowInfo;
-#endif
 	cRingBufferFrame *m_ESBuffer;
 	cOsdPipReceiver *m_Receiver;
 	const cChannel *m_Channel;
 	cBitmap * m_Bitmap;
-	cBitmap * m_BitmapInfo;
-#if VDRVERSNUM >= 10307
-	int m_InfoX;
-	int m_InfoY;
-#endif
-
-	time_t m_ShowTime;
-	bool m_ShowInfo;
+	cOsdInfoWindow * m_InfoWindow;
 
 	bool m_Active;
 	bool m_Ready;
-#if VDRVERSNUM >= 10307
 	bool m_Reset;
-#endif
+	bool m_MoveMode;
 	int m_Width, m_Height;
 	int m_FrameDrop;
 
@@ -59,12 +46,13 @@ private:
 
 	void ProcessImage(unsigned char * data, int length);
 
-	void ShowChannelInfo(const cChannel * channel, bool show = true);
 	void Stop(void);
 	void SwapChannels(void);
 protected:
 	virtual void Action(void);
 	virtual void ChannelSwitch(const cDevice * device, int channelNumber);
+	virtual void OsdClear(void);
+	virtual void OsdStatusMessage(const char * message);
 
 public:
 	cOsdPipObject(cDevice *Device, const cChannel *Channel);

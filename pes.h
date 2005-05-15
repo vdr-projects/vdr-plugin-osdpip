@@ -23,8 +23,9 @@ private:
 public:
 	cPESPacket(unsigned char * data, int length);
 	void Dump(FILE * fp = stdout);
-	unsigned char StreamId() { return streamId; }
+	unsigned char StreamId() const { return streamId; }
 	unsigned char * Payload(int & length);
+	unsigned short PacketLength() const { return packetLength; }
 };
 
 #endif // VDR_OSDPIP_PES_H

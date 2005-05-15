@@ -48,7 +48,7 @@ DEFINES += -D_GNU_SOURCE
 
 ### The object files (add further files here):
 
-OBJS = $(PLUGIN).o osd.o receiver.o setup.o i18n.o pes.o quantize.o decoder.o
+OBJS = $(PLUGIN).o osd_info.o osd.o receiver.o setup.o i18n.o pes.o quantize.o decoder.o
 
 ifdef FFMPEG_STATIC
 	DEFINES += -DHAVE_FFMPEG_STATIC

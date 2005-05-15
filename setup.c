@@ -8,44 +8,30 @@
 
 #include "setup.h"
 
-#if VDRVERSNUM < 10307
-# if MAXNUMCOLORS < 256
-#  warning WARNING: YOU WILL NOT BE ABLE TO USE 256 COLOR PIP
-# endif
-
-# ifndef VDR_OSDPIP_PATCHED
-#  warning WARNING: YOU WILL NOT BE ABLE TO USE VARIABLE COLOR PIP
-# endif
-
-# if MAXNUMCOLORS < 256
-const int kColorDepths = 1;
-# else
-#  ifndef VDR_OSDPIP_PATCHED
-const int kColorDepths = 3;
-#  else
 const int kColorDepths = 4;
-#  endif
-# endif
-#else
-const int kColorDepths = 4;
-#endif
-
-const int kSizes = 6;
+const int kSizes = 11;
 const int kFrameModes = 3;
 const int kFrameDrops = 4;
+const int kShowInfoTypes = 4;
 const int kInfoPositions = 4;
 
 const char * ColorDepthItems[] = {NULL, NULL, NULL, NULL, NULL};   // initialized later
+const char * ShowInfoItems[] = {NULL, NULL, NULL, NULL, NULL}; // initialized later
 const char * InfoPositionItems[] = {NULL, NULL, NULL, NULL, NULL}; // initialized later
 const char * FrameDropItems[] = {NULL, NULL, NULL, NULL, NULL}; // initialized later
 
 const char * SizeItems[] = {
+	"100x80",
 	"120x96",
+	"140x112",
 	"160x128",
+	"180x144",
 	"200x160",
+	"220x176",
 	"240x192",
+	"260x208",
 	"280x224",
-	"320x256",
+	"300x240",
 	NULL
 };
 
@@ -66,7 +52,7 @@ cOsdPipSetup::cOsdPipSetup(void)
 	CropTop    = 5;
 	CropBottom = 5;
 	ColorDepth = kDepthGrey16;
-	Size = 2;
+	Size = 5;
 	FrameMode = kFrameModeI;
 	FrameDrop = -1;
 	SwapFfmpeg = 1;
@@ -105,6 +91,11 @@ cOsdPipSetupPage::cOsdPipSetupPage(void)
 	ColorDepthItems[2] = tr("Color (256, fixed)");
 	ColorDepthItems[3] = tr("Color (128, variable)");
 
+	ShowInfoItems[0] = tr("no");
+	ShowInfoItems[1] = tr("channel only");
+	ShowInfoItems[2] = tr("simple");
+	ShowInfoItems[3] = tr("complete");
+
 	InfoPositionItems[0] = tr("top left");
 	InfoPositionItems[1] = tr("top right");
 	InfoPositionItems[2] = tr("bottom left");
@@ -126,7 +117,7 @@ cOsdPipSetupPage::cOsdPipSetupPage(void)
 	Add(new cMenuEditStraItem(tr("Frames to display"), &m_NewOsdPipSetup.FrameMode, kFrameModes, FrameModeItems));
 	Add(new cMenuEditStraItem(tr("Drop frames"), &m_NewOsdPipSetup.FrameDrop, kFrameDrops, FrameDropItems));
 	Add(new cMenuEditBoolItem(tr("Swap FFMPEG output"), &m_NewOsdPipSetup.SwapFfmpeg));
-	Add(new cMenuEditBoolItem(tr("Show info window"), &m_NewOsdPipSetup.ShowInfo));
+	Add(new cMenuEditStraItem(tr("Show info window"), &m_NewOsdPipSetup.ShowInfo, kShowInfoTypes, ShowInfoItems));
 	Add(new cMenuEditIntItem(tr("Info window width"), &m_NewOsdPipSetup.InfoWidth, 200, 600));
 	Add(new cMenuEditStraItem(tr("Info window position"), &m_NewOsdPipSetup.InfoPosition, kInfoPositions, InfoPositionItems));
 }

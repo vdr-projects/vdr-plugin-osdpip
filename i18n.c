@@ -24,12 +24,8 @@ const tI18nPhrase Phrases[] = {
 		"", // Romaneste
 		"", // Magyar
 		"", // Catala
-#if VDRVERSNUM > 10302
 		"", // Russian
-# if VDRVERSNUM > 10307
 		"", // Croatian
-# endif
-#endif
 	},
 	{
 		"Picture-in-Picture", // English
@@ -48,12 +44,8 @@ const tI18nPhrase Phrases[] = {
 		"", // Romaneste
 		"", // Magyar
 		"", // Catala
-#if VDRVERSNUM > 10302
 		"", // Russian
-# if VDRVERSNUM > 10307
 		"", // Croatian
-# endif
-#endif
 	},
 	{
 		"Crop left", // English
@@ -72,12 +64,8 @@ const tI18nPhrase Phrases[] = {
 		"", // Romaneste
 		"", // Magyar
 		"", // Catala
-#if VDRVERSNUM > 10302
 		"", // Russian
-# if VDRVERSNUM > 10307
 		"", // Croatian
-# endif
-#endif
 	},
 	{
 		"Crop right", // English
@@ -96,12 +84,8 @@ const tI18nPhrase Phrases[] = {
 		"", // Romaneste
 		"", // Magyar
 		"", // Catala
-#if VDRVERSNUM > 10302
 		"", // Russian
-# if VDRVERSNUM > 10307
 		"", // Croatian
-# endif
-#endif
 	},
 	{
 		"Crop at top", // English
@@ -120,12 +104,8 @@ const tI18nPhrase Phrases[] = {
 		"", // Romaneste
 		"", // Magyar
 		"", // Catala
-#if VDRVERSNUM > 10302
 		"", // Russian
-# if VDRVERSNUM > 10307
 		"", // Croatian
-# endif
-#endif
 	},
 	{
 		"Crop at bottom", // English
@@ -144,12 +124,8 @@ const tI18nPhrase Phrases[] = {
 		"", // Romaneste
 		"", // Magyar
 		"", // Catala
-#if VDRVERSNUM > 10302
 		"", // Russian
-# if VDRVERSNUM > 10307
 		"", // Croatian
-# endif
-#endif
 	},
 	{
 		"Color depth", // English
@@ -168,12 +144,8 @@ const tI18nPhrase Phrases[] = {
 		"", // Romaneste
 		"", // Magyar
 		"", // Catala
-#if VDRVERSNUM > 10302
 		"", // Russian
-# if VDRVERSNUM > 10307
 		"", // Croatian
-# endif
-#endif
 	},
 	{
 		"Size", // English
@@ -192,12 +164,8 @@ const tI18nPhrase Phrases[] = {
 		"", // Romaneste
 		"", // Magyar
 		"", // Catala
-#if VDRVERSNUM > 10302
 		"", // Russian
-# if VDRVERSNUM > 10307
 		"", // Croatian
-# endif
-#endif
 	},
 	{
 		"Frames to display", // English
@@ -216,12 +184,8 @@ const tI18nPhrase Phrases[] = {
 		"", // Romaneste
 		"", // Magyar
 		"", // Catala
-#if VDRVERSNUM > 10302
 		"", // Russian
-# if VDRVERSNUM > 10307
 		"", // Croatian
-# endif
-#endif
 	},
 	{
 		"Drop frames", // English
@@ -240,12 +204,8 @@ const tI18nPhrase Phrases[] = {
 		"", // Romaneste
 		"", // Magyar
 		"", // Catala
-#if VDRVERSNUM > 10302
 		"", // Russian
-# if VDRVERSNUM > 10307
 		"", // Croatian
-# endif
-#endif
 	},
 	{
 		"Swap FFMPEG output", // English
@@ -264,12 +224,8 @@ const tI18nPhrase Phrases[] = {
 		"", // Romaneste
 		"", // Magyar
 		"", // Catala
-#if VDRVERSNUM > 10302
 		"", // Russian
-# if VDRVERSNUM > 10307
 		"", // Croatian
-# endif
-#endif
 	},
 	{
 		"Show info window", // English
@@ -280,7 +236,7 @@ const tI18nPhrase Phrases[] = {
 		"", // Português
 		"", // Français
 		"", // Norsk
-		"Näytä kuvatieto", // Suomi
+		"Näytä kanavatieto", // Suomi
 		"", // Polski
 		"", // Español
 		"", // Ellinika
@@ -288,12 +244,8 @@ const tI18nPhrase Phrases[] = {
 		"", // Romaneste
 		"", // Magyar
 		"", // Catala
-#if VDRVERSNUM > 10302
 		"", // Russian
-# if VDRVERSNUM > 10307
 		"", // Croatian
-# endif
-#endif
 	},
 	{
 		"Info window width", // English
@@ -304,7 +256,7 @@ const tI18nPhrase Phrases[] = {
 		"", // Português
 		"", // Français
 		"", // Norsk
-		"Kuvatiedon leveys", // Suomi
+		"Kanavatiedon leveys", // Suomi
 		"", // Polski
 		"", // Español
 		"", // Ellinika
@@ -312,12 +264,8 @@ const tI18nPhrase Phrases[] = {
 		"", // Romaneste
 		"", // Magyar
 		"", // Catala
-#if VDRVERSNUM > 10302
 		"", // Russian
-# if VDRVERSNUM > 10307
 		"", // Croatian
-# endif
-#endif
 	},
 	{
 		"Info window position", // English
@@ -328,7 +276,7 @@ const tI18nPhrase Phrases[] = {
 		"", // Português
 		"", // Français
 		"", // Norsk
-		"Kuvatiedon sijainti", // Suomi
+		"Kanavatiedon sijainti", // Suomi
 		"", // Polski
 		"", // Español
 		"", // Ellinika
@@ -336,12 +284,8 @@ const tI18nPhrase Phrases[] = {
 		"", // Romaneste
 		"", // Magyar
 		"", // Catala
-#if VDRVERSNUM > 10302
 		"", // Russian
-# if VDRVERSNUM > 10307
 		"", // Croatian
-# endif
-#endif
 	},
 	{
 		"top left", // English
@@ -360,12 +304,8 @@ const tI18nPhrase Phrases[] = {
 		"", // Romaneste
 		"", // Magyar
 		"", // Catala
-#if VDRVERSNUM > 10302
 		"", // Russian
-# if VDRVERSNUM > 10307
 		"", // Croatian
-# endif
-#endif
 	},
 	{
 		"top right", // English
@@ -384,12 +324,8 @@ const tI18nPhrase Phrases[] = {
 		"", // Romaneste
 		"", // Magyar
 		"", // Catala
-#if VDRVERSNUM > 10302
 		"", // Russian
-# if VDRVERSNUM > 10307
 		"", // Croatian
-# endif
-#endif
 	},
 	{
 		"bottom left", // English
@@ -408,12 +344,8 @@ const tI18nPhrase Phrases[] = {
 		"", // Romaneste
 		"", // Magyar
 		"", // Catala
-#if VDRVERSNUM > 10302
 		"", // Russian
-# if VDRVERSNUM > 10307
 		"", // Croatian
-# endif
-#endif
 	},
 	{
 		"bottom right", // English
@@ -432,12 +364,8 @@ const tI18nPhrase Phrases[] = {
 		"", // Romaneste
 		"", // Magyar
 		"", // Catala
-#if VDRVERSNUM > 10302
 		"", // Russian
-# if VDRVERSNUM > 10307
 		"", // Croatian
-# endif
-#endif
 	},
 	{
 		"Greyscale (16)", // English
@@ -456,12 +384,8 @@ const tI18nPhrase Phrases[] = {
 		"", // Romaneste
 		"", // Magyar
 		"", // Catala
-#if VDRVERSNUM > 10302
 		"", // Russian
-# if VDRVERSNUM > 10307
 		"", // Croatian
-# endif
-#endif
 	},
 	{
 		"Greyscale (256)", // English
@@ -480,12 +404,8 @@ const tI18nPhrase Phrases[] = {
 		"", // Romaneste
 		"", // Magyar
 		"", // Catala
-#if VDRVERSNUM > 10302
 		"", // Russian
-# if VDRVERSNUM > 10307
 		"", // Croatian
-# endif
-#endif
 	},
 	{
 		"Color (256, fixed)", // English
@@ -504,12 +424,8 @@ const tI18nPhrase Phrases[] = {
 		"", // Romaneste
 		"", // Magyar
 		"", // Catala
-#if VDRVERSNUM > 10302
 		"", // Russian
-# if VDRVERSNUM > 10307
 		"", // Croatian
-# endif
-#endif
 	},
 	{
 		"Color (128, variable)", // English
@@ -528,12 +444,8 @@ const tI18nPhrase Phrases[] = {
 		"", // Romaneste
 		"", // Magyar
 		"", // Catala
-#if VDRVERSNUM > 10302
 		"", // Russian
-# if VDRVERSNUM > 10307
 		"", // Croatian
-# endif
-#endif
 	},
 	{
 		"X Position", // English
@@ -552,12 +464,8 @@ const tI18nPhrase Phrases[] = {
 		"", // Romaneste
 		"", // Magyar
 		"", // Catala
-#if VDRVERSNUM > 10302
 		"", // Russian
-# if VDRVERSNUM > 10307
 		"", // Croatian
-# endif
-#endif
 	},
 	{
 		"Y Position", // English
@@ -576,12 +484,8 @@ const tI18nPhrase Phrases[] = {
 		"", // Romaneste
 		"", // Magyar
 		"", // Catala
-#if VDRVERSNUM > 10302
 		"", // Russian
-# if VDRVERSNUM > 10307
 		"", // Croatian
-# endif
-#endif
 	},
 	{
 		"automatic", // English
@@ -600,12 +504,8 @@ const tI18nPhrase Phrases[] = {
 		"", // Romaneste
 		"", // Magyar
 		"", // Catala
-#if VDRVERSNUM > 10302
 		"", // Russian
-# if VDRVERSNUM > 10307
 		"", // Croatian
-# endif
-#endif
 	},
 	{
 		"none", // English
@@ -624,12 +524,8 @@ const tI18nPhrase Phrases[] = {
 		"", // Romaneste
 		"", // Magyar
 		"", // Catala
-#if VDRVERSNUM > 10302
 		"", // Russian
-# if VDRVERSNUM > 10307
 		"", // Croatian
-# endif
-#endif
 	},
 	{
 		"1 frame", // English
@@ -648,12 +544,8 @@ const tI18nPhrase Phrases[] = {
 		"", // Romaneste
 		"", // Magyar
 		"", // Catala
-#if VDRVERSNUM > 10302
 		"", // Russian
-# if VDRVERSNUM > 10307
 		"", // Croatian
-# endif
-#endif
 	},
 	{
 		"2 frames", // English
@@ -672,12 +564,108 @@ const tI18nPhrase Phrases[] = {
 		"", // Romaneste
 		"", // Magyar
 		"", // Catala
-#if VDRVERSNUM > 10302
 		"", // Russian
-# if VDRVERSNUM > 10307
 		"", // Croatian
-# endif
-#endif
+	},
+	{
+		"channel only", // English
+		"nur Kanal", // Deutsch
+		"", // Slovenski
+		"", // Italiano
+		"", // Nederlands
+		"", // Português
+		"", // Français
+		"", // Norsk
+		"kanava", // Suomi
+		"", // Polski
+		"", // Español
+		"", // Ellinika
+		"", // Svenska
+		"", // Romaneste
+		"", // Magyar
+		"", // Catala
+		"", // Russian
+		"", // Croatian
+	},
+	{
+		"simple", // English
+		"einfach", // Deutsch
+		"", // Slovenski
+		"", // Italiano
+		"", // Nederlands
+		"", // Português
+		"", // Français
+		"", // Norsk
+		"lyhyt", // Suomi
+		"", // Polski
+		"", // Español
+		"", // Ellinika
+		"", // Svenska
+		"", // Romaneste
+		"", // Magyar
+		"", // Catala
+		"", // Russian
+		"", // Croatian
+	},
+	{
+		"complete", // English
+		"komplett", // Deutsch
+		"", // Slovenski
+		"", // Italiano
+		"", // Nederlands
+		"", // Português
+		"", // Français
+		"", // Norsk
+		"pitkä", // Suomi
+		"", // Polski
+		"", // Español
+		"", // Ellinika
+		"", // Svenska
+		"", // Romaneste
+		"", // Magyar
+		"", // Catala
+		"", // Russian
+		"", // Croatian
+	},
+	{
+		"Normal mode", // English
+		"Normaler Modus", // Deutsch
+		"", // Slovenski
+		"", // Italiano
+		"", // Nederlands
+		"", // Português
+		"", // Français
+		"", // Norsk
+		"Normaalitoiminto", // Suomi
+		"", // Polski
+		"", // Español
+		"", // Ellinika
+		"", // Svenska
+		"", // Romaneste
+		"", // Magyar
+		"", // Catala
+		"", // Russian
+		"", // Croatian
+	},
+	{
+		"Move mode", // English
+		"Bewegungsmodus", // Deutsch
+		"", // Slovenski
+		"", // Italiano
+		"", // Nederlands
+		"", // Português
+		"", // Français
+		"", // Norsk
+		"Siirtotoiminto", // Suomi
+		"", // Polski
+		"", // Español
+		"", // Ellinika
+		"", // Svenska
+		"", // Romaneste
+		"", // Magyar
+		"", // Catala
+		"", // Russian
+		"", // Croatian
 	},
 	{ NULL }
 };

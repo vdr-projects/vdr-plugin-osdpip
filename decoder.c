@@ -71,10 +71,18 @@ int cDecoder::Resample(int width, int height)
 
 	m_Width = width;
 	m_Height = height;
+#if LIBAVCODEC_BUILD < 4708
 	contextResample = img_resample_full_init(m_Width, m_Height,
 			m_Context->width, m_Context->height,
 			OsdPipSetup.CropTop, OsdPipSetup.CropBottom,
 			OsdPipSetup.CropLeft, OsdPipSetup.CropRight);
+#else
+	contextResample = img_resample_full_init(m_Width, m_Height,
+			m_Context->width, m_Context->height,
+			OsdPipSetup.CropTop, OsdPipSetup.CropBottom,
+			OsdPipSetup.CropLeft, OsdPipSetup.CropRight,
+			0, 0, 0, 0);
+#endif
 	if (!contextResample) {
 		printf("Error initializing resample context.\n");
 		return -1;
@@ -100,7 +108,10 @@ int cDecoder::ConvertToRGB()
 
 double cDecoder::AspectRatio()
 {
-	//printf("%d %d %f\n", m_Context->width, m_Context->height, m_Context->aspect_ratio);
+#if LIBAVCODEC_BUILD < 4687
 	return m_Context->aspect_ratio;
+#else
+	return av_q2d(m_Context->sample_aspect_ratio) * (double) m_Context->width / (double) m_Context->height;
+#endif
 }
 
