@@ -12,20 +12,20 @@
 class cPESPacket
 {
 private:
-	unsigned char * data;
-	int length;
+    unsigned char * data;
+    int length;
 
-	unsigned char streamId;
-	unsigned short packetLength;
-	unsigned char headerDataLength;
-	int payloadStart;
-	int payloadLength;
+    unsigned char streamId;
+    unsigned short packetLength;
+    unsigned char headerDataLength;
+    int payloadStart;
+    int payloadLength;
 public:
-	cPESPacket(unsigned char * data, int length);
-	void Dump(FILE * fp = stdout);
-	unsigned char StreamId() const { return streamId; }
-	unsigned char * Payload(int & length);
-	unsigned short PacketLength() const { return packetLength; }
+    cPESPacket(unsigned char * data, int length);
+    void Dump(FILE * fp = stdout);
+    unsigned char StreamId() const { return streamId; }
+    unsigned char * Payload(int & length);
+    unsigned short PacketLength() const { return packetLength; }
 };
 
 #endif // VDR_OSDPIP_PES_H

@@ -13,145 +13,101 @@
 #include <vdr/ringbuffer.h>
 
 cOsdPipReceiver::cOsdPipReceiver(const cChannel *Channel,
-	cRingBufferFrame *ESBuffer):
-#if VDRVERSNUM >= 10319
-	cReceiver(Channel->Ca(), 0, Channel->Vpid())
+    cRingBufferFrame *ESBuffer):
+#if (APIVERSNUM < 10500)
+    cReceiver(Channel->Ca(), 0, Channel->Vpid()),
 #else
-	cReceiver(Channel->Ca(), 0, 1, Channel->Vpid())
+    cReceiver(Channel->GetChannelID(), 0, Channel->Vpid()),
 #endif
+    cThread("osdpip_receiver")
 {
-	m_TSBuffer = new cRingBufferLinear(MEGABYTE(3), TS_SIZE * 2, true);
-#if VDRVERSNUM >= 10313
-	m_TSBuffer->SetTimeouts(0, 100);
-#endif
-	m_ESBuffer = ESBuffer;
-#if VDRVERSNUM >= 10319
-	m_Remux = new cRemux(Channel->Vpid(), NULL, NULL, NULL, true);
-#else
-	m_Remux = new cRemux(Channel->Vpid(), 0, 0, 0, 0, true);
-#endif
-	m_Active = false;
+    m_TSBuffer = new cRingBufferLinear(MEGABYTE(3), TS_SIZE * 2, true);
+    m_TSBuffer->SetTimeouts(0, 100);
+    m_ESBuffer = ESBuffer;
+    m_Remux = new cRemux(Channel->Vpid(), NULL, NULL, NULL, true);
+    m_Active = false;
 }
 
 cOsdPipReceiver::~cOsdPipReceiver()
 {
-	Detach();
-	delete m_Remux;
-	delete m_TSBuffer;
+    Detach();
+    delete m_Remux;
+    delete m_TSBuffer;
 }
 
 void cOsdPipReceiver::Activate(bool On)
 {
-	if (On)
-		Start();
-	else if (m_Active) {
-		m_Active = false;
-		Cancel(3);
-	}
+    if (On)
+        Start();
+    else if (m_Active) {
+        m_Active = false;
+        Cancel(3);
+    }
 }
 
 void cOsdPipReceiver::Receive(uchar *Data, int Length)
 {
-	int put = m_TSBuffer->Put(Data, Length);
-	if (put != Length)
-#if VDRVERSNUM < 10313
-		esyslog("osdpip: ringbuffer overflow (%d bytes dropped)", Length - put);
-#else
-		m_TSBuffer->ReportOverflow(Length - put);
-#endif
+    int put = m_TSBuffer->Put(Data, Length);
+    if (put != Length)
+        m_TSBuffer->ReportOverflow(Length - put);
 }
 
 void cOsdPipReceiver::Action(void)
 {
- 	dsyslog("osdpip: receiver thread started (pid=%d)", getpid());
+    dsyslog("osdpip: receiver thread started (pid=%d)", getpid());
 
-	m_Active = true;
+    m_Active = true;
 
-	unsigned char NewPictureType = NO_PICTURE;
-	unsigned char CurPictureType = NO_PICTURE;
-	unsigned char VideoBuffer[200000];
-	int VideoBufferPos = 0;
+    unsigned char NewPictureType = NO_PICTURE;
+    unsigned char CurPictureType = NO_PICTURE;
+    unsigned char VideoBuffer[200000];
+    int VideoBufferPos = 0;
 
-	while (m_Active) {
-#if VDRVERSNUM < 10313
-		int r;
-		const uchar *b = m_TSBuffer->Get(r);
-		if (b) {
-	 		int Count = r, Result;
-			uchar *p = m_Remux->Process(b, Count, Result, &NewPictureType);
-			m_TSBuffer->Del(Count);
+    while (m_Active) {
+        int r;
+        const uchar *b = m_TSBuffer->Get(r);
+        if (b) {
+            int Count = m_Remux->Put(b, r);
+            if (Count)
+                m_TSBuffer->Del(Count);
+        }
 
-			if (p) {
-				if (NewPictureType != NO_PICTURE) {
-					if ((OsdPipSetup.FrameMode == kFrameModeI && CurPictureType == I_FRAME) ||
-						(OsdPipSetup.FrameMode == kFrameModeIP && (CurPictureType == I_FRAME || CurPictureType == P_FRAME)) ||
-						(OsdPipSetup.FrameMode == kFrameModeIPB))
-					{
-						cFrame * frame = new cFrame(VideoBuffer, VideoBufferPos, ftVideo, CurPictureType);
-						if (!m_ESBuffer->Put(frame))
-						{
-							delete frame;
-						}
-					}
-					CurPictureType = NewPictureType;
-					VideoBufferPos = 0;
-				}
-				cPESPacket Packet(p, Result);
-				int PayloadLength = 0;
-				unsigned char * PayloadData = Packet.Payload(PayloadLength);
-				if ((Packet.StreamId() & 0xF0) == 0xE0) { // video packet
-					memcpy(&VideoBuffer[VideoBufferPos], PayloadData, PayloadLength);
-					VideoBufferPos += PayloadLength;
-				}
-			}
-		} else
-	 		usleep(1); // this keeps the CPU load low
-#else
-		int r;
-		const uchar *b = m_TSBuffer->Get(r);
-		if (b) {
-	 		int Count = m_Remux->Put(b, r);
-			if (Count)
-				m_TSBuffer->Del(Count);
-		}
+        int Result;
+        uchar *p = m_Remux->Get(Result, &NewPictureType);
+        if (p) {
+            if (NewPictureType != NO_PICTURE) {
+                if ((OsdPipSetup.FrameMode == kFrameModeI && CurPictureType == I_FRAME) ||
+                    (OsdPipSetup.FrameMode == kFrameModeIP && (CurPictureType == I_FRAME || CurPictureType == P_FRAME)) ||
+                    (OsdPipSetup.FrameMode == kFrameModeIPB))
+                {
+                    cFrame * frame = new cFrame(VideoBuffer, VideoBufferPos, ftVideo, CurPictureType);
+                    if (!m_ESBuffer->Put(frame))
+                    {
+                        delete frame;
+                    }
+                }
+                CurPictureType = NewPictureType;
+                VideoBufferPos = 0;
+            }
 
-		int Result;
-		uchar *p = m_Remux->Get(Result, &NewPictureType);
-		if (p) {
-			if (NewPictureType != NO_PICTURE) {
-				if ((OsdPipSetup.FrameMode == kFrameModeI && CurPictureType == I_FRAME) ||
-					(OsdPipSetup.FrameMode == kFrameModeIP && (CurPictureType == I_FRAME || CurPictureType == P_FRAME)) ||
-					(OsdPipSetup.FrameMode == kFrameModeIPB))
-				{
-					cFrame * frame = new cFrame(VideoBuffer, VideoBufferPos, ftVideo, CurPictureType);
-					if (!m_ESBuffer->Put(frame))
-					{
-						delete frame;
-					}
-				}
-				CurPictureType = NewPictureType;
-				VideoBufferPos = 0;
-			}
+            int pos = 0;
+            while (pos + 6 < Result)
+            {
+                cPESPacket Packet(p + pos, Result - pos);
+                if (pos + 6 + Packet.PacketLength() > Result)
+                    break;
+                int PayloadLength = 0;
+                unsigned char * PayloadData = Packet.Payload(PayloadLength);
+                if ((Packet.StreamId() & 0xF0) == 0xE0) { // video packet
+                    memcpy(&VideoBuffer[VideoBufferPos], PayloadData, PayloadLength);
+                    VideoBufferPos += PayloadLength;
+                }
+                pos += Packet.PacketLength() + 6;
+            }
+            m_Remux->Del(pos);
+        }
+    }
 
-			int pos = 0;
-			while (pos + 6 < Result)
-			{
-				cPESPacket Packet(p + pos, Result - pos);
-				if (pos + 6 + Packet.PacketLength() > Result)
-					break;
-				int PayloadLength = 0;
-				unsigned char * PayloadData = Packet.Payload(PayloadLength);
-				if ((Packet.StreamId() & 0xF0) == 0xE0) { // video packet
-					memcpy(&VideoBuffer[VideoBufferPos], PayloadData, PayloadLength);
-					VideoBufferPos += PayloadLength;
-				}
-				pos += Packet.PacketLength() + 6;
-			}
-			m_Remux->Del(pos);
-		}
-#endif
-	}
-
-	dsyslog("osdpip: receiver thread ended (pid=%d)", getpid());
+    dsyslog("osdpip: receiver thread ended (pid=%d)", getpid());
 }
 

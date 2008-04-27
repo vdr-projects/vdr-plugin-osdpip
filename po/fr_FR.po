@@ -1,0 +1,121 @@
+# VDR plugin language source file.
+# Copyright (C) 2007 Klaus Schmidinger <kls@cadsoft.de>
+# This file is distributed under the same license as the VDR package.
+# Jean-Claude Repetto <jc@repetto.org>, 2001
+# Olivier Jacques <jacquesolivier@hotmail.com>, 2003
+# Gregoire Favre <greg@magma.unil.ch>, 2003
+# Nicolas Huillard <nhuillard@e-dition.fr>, 2005
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: VDR 1.5.7\n"
+"Report-Msgid-Bugs-To: <andreas.regel@powarman.de>\n"
+"POT-Creation-Date: 2008-04-27 18:04+0200\n"
+"PO-Revision-Date: 2008-04-27 18:00+0200\n"
+"Last-Translator: Nicolas Huillard <nhuillard@e-dition.fr>\n"
+"Language-Team: <vdr@linuxtv.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=ISO-8859-1\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+msgid "Normal mode"
+msgstr "Mode normale"
+
+msgid "Move mode"
+msgstr "Mode mouvement"
+
+msgid "OSD Picture-in-Picture"
+msgstr "OSD-PIP Incrustation d'image dans l'image"
+
+msgid "Picture-in-Picture"
+msgstr "Incrustation d'image"
+
+msgid "Greyscale (16)"
+msgstr "Niveau de gris (16)"
+
+msgid "Greyscale (256)"
+msgstr "Niveau de gris (256)"
+
+msgid "Color (256, fixed)"
+msgstr "Couleur (256 fixe)"
+
+msgid "Color (128, variable)"
+msgstr "Couleur (128 variable)"
+
+msgid "Color (256, dithered)"
+msgstr ""
+
+msgid "channel only"
+msgstr "Seulement la chaine"
+
+msgid "simple"
+msgstr "Simple"
+
+msgid "complete"
+msgstr "Complet"
+
+msgid "top left"
+msgstr "En haut a gauche"
+
+msgid "top right"
+msgstr "En haut a droite"
+
+msgid "bottom left"
+msgstr "En bas a gauche"
+
+msgid "bottom right"
+msgstr "En bas a droite"
+
+msgid "automatic"
+msgstr "Automatique"
+
+msgid "none"
+msgstr "Aucun"
+
+msgid "1 frame"
+msgstr "Sequence 1"
+
+msgid "2 frames"
+msgstr "Sequence 2"
+
+msgid "X Position"
+msgstr "X Position"
+
+msgid "Y Position"
+msgstr "Y Position"
+
+msgid "Crop left"
+msgstr "Couper a gauche"
+
+msgid "Crop right"
+msgstr "Couper a droite"
+
+msgid "Crop at top"
+msgstr "Couper la partie haute"
+
+msgid "Crop at bottom"
+msgstr "Couper la partie basse"
+
+msgid "Color depth"
+msgstr "Nobre de couleur pour l'image"
+
+msgid "Size"
+msgstr "Taille"
+
+msgid "Frames to display"
+msgstr "Sequence a afficher"
+
+msgid "Drop frames"
+msgstr "Sauter des sequences"
+
+msgid "Swap FFMPEG output"
+msgstr "Changer la sortie de FFMPEG"
+
+msgid "Show info window"
+msgstr "Montrer les informations de la fenetre"
+
+msgid "Info window width"
+msgstr "Information sur la taille de la fenetre"
+
+msgid "Info window position"
+msgstr "Information sur la position de la fenetre"

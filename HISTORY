@@ -1,6 +1,24 @@
 VDR Plugin 'osdpip' Revision History
 ------------------------------------
 
+2008-04-27: Version 0.0.9 (written by Andreas Regel)
+- dropped support for VDR version lower than 1.3.47.
+- Now using palette replacemen introduced in VDR 1.4.27, so palette
+  setting workaround is not needed any longer. This simplifies code a
+  bit.
+- added support for VDR 1.6. Now 1.4 and 1.6 are supported (tested with
+  1.4.7 and 1.6.0)
+- added gettext localization support introduced with VDR 1.5.7.
+- Do not decode B frames when dropping them.
+- Use cCondWait::SleepMs instead of usleep.
+- Fixed automatic closing of OSD after some minutes.
+- Fixed showing wrong channel information.
+- Added missing inclusion of <vdr/device.h>.
+- Added new colour reduction mode using 256 dithered colours (thanks to
+  Martin Wache).
+- Added french translations (thanks to micky979)
+
+
 2005-05-15: Version 0.0.8 (written by Andreas Regel)
 - Added Navigation through channel in a way like with ordinary VDR. Use
   the Left/Right keys to select channel groups, OK to choose one or the

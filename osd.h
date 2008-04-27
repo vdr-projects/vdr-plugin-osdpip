@@ -23,43 +23,42 @@ class cQuantize;
 
 class cOsdPipObject: public cOsdObject, public cThread, public cStatus {
 private:
-	cOsd *m_Osd;
-	cRingBufferFrame *m_ESBuffer;
-	cOsdPipReceiver *m_Receiver;
-	const cChannel *m_Channel;
-	cBitmap * m_Bitmap;
-	cOsdInfoWindow * m_InfoWindow;
+    cOsd *m_Osd;
+    cRingBufferFrame *m_ESBuffer;
+    cOsdPipReceiver *m_Receiver;
+    const cChannel *m_Channel;
+    cBitmap * m_Bitmap;
+    cOsdInfoWindow * m_InfoWindow;
 
-	bool m_Active;
-	bool m_Ready;
-	bool m_Reset;
-	bool m_MoveMode;
-	int m_Width, m_Height;
-	int m_FrameDrop;
+    bool m_Active;
+    bool m_Ready;
+    bool m_Reset;
+    bool m_MoveMode;
+    int m_Width, m_Height;
+    int m_FrameDrop;
 
-	unsigned int m_AlphaBase;
-	unsigned int m_Palette[256];
-	int m_PaletteStart;
+    unsigned int m_AlphaBase;
+    unsigned int m_Palette[256];
+    int m_PaletteStart;
 
-	cDecoder decoder;
-	cQuantize * quantizer;
+    cDecoder decoder;
+    cQuantize * quantizer;
 
-	void ProcessImage(unsigned char * data, int length);
+    void ProcessImage(unsigned char * data, int length);
 
-	void Stop(void);
-	void SwapChannels(void);
+    void Stop(void);
+    void SwapChannels(void);
 protected:
-	virtual void Action(void);
-	virtual void ChannelSwitch(const cDevice * device, int channelNumber);
-	virtual void OsdClear(void);
-	virtual void OsdStatusMessage(const char * message);
+    virtual void Action(void);
+    virtual void ChannelSwitch(const cDevice * device, int channelNumber);
+    virtual void OsdStatusMessage(const char * message);
 
 public:
-	cOsdPipObject(cDevice *Device, const cChannel *Channel);
-	virtual ~cOsdPipObject(void);
+    cOsdPipObject(cDevice *Device, const cChannel *Channel);
+    virtual ~cOsdPipObject(void);
 
-	virtual void Show(void);
-	eOSState ProcessKey(eKeys k);
+    virtual void Show(void);
+    eOSState ProcessKey(eKeys k);
 };
 
 #endif // VDR_OSDPIP_OSD_H

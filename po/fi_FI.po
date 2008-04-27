@@ -1,0 +1,121 @@
+# VDR plugin language source file.
+# Copyright (C) 2007 Klaus Schmidinger <kls@cadsoft.de>
+# This file is distributed under the same license as the VDR package.
+# Hannu Savolainen <hannu@opensound.com>, 2002
+# Jaakko Hyv‰tti <jaakko@hyvatti.iki.fi>, 2002
+# Niko Tarnanen <niko.tarnanen@hut.fi>, 2003
+# Rolf Ahrenberg <rahrenbe@cc.hut.fi>, 2003
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: VDR 1.5.7\n"
+"Report-Msgid-Bugs-To: <andreas.regel@powarman.de>\n"
+"POT-Creation-Date: 2008-04-27 18:04+0200\n"
+"PO-Revision-Date: 2008-04-27 18:00+0200\n"
+"Last-Translator: Rolf Ahrenberg <rahrenbe@cc.hut.fi>\n"
+"Language-Team: <vdr@linuxtv.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=ISO-8859-15\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+msgid "Normal mode"
+msgstr "Normaalitoiminto"
+
+msgid "Move mode"
+msgstr "Siirtotoiminto"
+
+msgid "OSD Picture-in-Picture"
+msgstr "Kuva kuvassa -toiminto (OSD)"
+
+msgid "Picture-in-Picture"
+msgstr "Kuva kuvassa"
+
+msgid "Greyscale (16)"
+msgstr "harmaas‰vy (16)"
+
+msgid "Greyscale (256)"
+msgstr "harmaas‰vy (256)"
+
+msgid "Color (256, fixed)"
+msgstr "v‰ri (256)"
+
+msgid "Color (128, variable)"
+msgstr "v‰ri (128, vaihtuva)"
+
+msgid "Color (256, dithered)"
+msgstr "v‰ri (256)"
+
+msgid "channel only"
+msgstr "kanava"
+
+msgid "simple"
+msgstr "lyhyt"
+
+msgid "complete"
+msgstr "pitk‰"
+
+msgid "top left"
+msgstr "vasen yl‰reuna"
+
+msgid "top right"
+msgstr "oikea yl‰reuna"
+
+msgid "bottom left"
+msgstr "vasen alareuna"
+
+msgid "bottom right"
+msgstr "oikea alareuna"
+
+msgid "automatic"
+msgstr "automaattisesti"
+
+msgid "none"
+msgstr "ei"
+
+msgid "1 frame"
+msgstr "1 kehys"
+
+msgid "2 frames"
+msgstr "2 kehyst‰"
+
+msgid "X Position"
+msgstr "Vaakasijainti"
+
+msgid "Y Position"
+msgstr "Pystysijainti"
+
+msgid "Crop left"
+msgstr "Leikkaa vasemmalta"
+
+msgid "Crop right"
+msgstr "Leikkaa oikealta"
+
+msgid "Crop at top"
+msgstr "Leikkaa ylh‰‰lt‰"
+
+msgid "Crop at bottom"
+msgstr "Leikkaa alhaalta"
+
+msgid "Color depth"
+msgstr "V‰risyvyys"
+
+msgid "Size"
+msgstr "Koko"
+
+msgid "Frames to display"
+msgstr "N‰yt‰ kehykset"
+
+msgid "Drop frames"
+msgstr "Hylk‰‰ kehyksi‰"
+
+msgid "Swap FFMPEG output"
+msgstr "Invertoi FFMPEG-kuva"
+
+msgid "Show info window"
+msgstr "N‰yt‰ kanavatieto"
+
+msgid "Info window width"
+msgstr "Kanavatiedon leveys"
+
+msgid "Info window position"
+msgstr "Kanavatiedon sijainti"

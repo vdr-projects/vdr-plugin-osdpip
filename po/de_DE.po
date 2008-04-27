@@ -1,0 +1,118 @@
+# VDR plugin language source file.
+# Copyright (C) 2007 Klaus Schmidinger <kls@cadsoft.de>
+# This file is distributed under the same license as the VDR package.
+# Klaus Schmidinger <kls@cadsoft.de>, 2000
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: VDR 1.5.7\n"
+"Report-Msgid-Bugs-To: <andreas.regel@powarman.de>\n"
+"POT-Creation-Date: 2008-04-27 18:04+0200\n"
+"PO-Revision-Date: 2008-04-27 18:00+0200\n"
+"Last-Translator: Klaus Schmidinger <kls@cadsoft.de>\n"
+"Language-Team: <vdr@linuxtv.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=ISO-8859-15\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+msgid "Normal mode"
+msgstr "Normaler Modus"
+
+msgid "Move mode"
+msgstr "Bewegungsmodus"
+
+msgid "OSD Picture-in-Picture"
+msgstr "OSD Bild-in-Bild"
+
+msgid "Picture-in-Picture"
+msgstr "Bild-in-Bild"
+
+msgid "Greyscale (16)"
+msgstr "16 Graustufen"
+
+msgid "Greyscale (256)"
+msgstr "256 Graustufen"
+
+msgid "Color (256, fixed)"
+msgstr "256 Farben (fest)"
+
+msgid "Color (128, variable)"
+msgstr "128 Farben (variabel)"
+
+msgid "Color (256, dithered)"
+msgstr "256 Farben (dithered)"
+
+msgid "channel only"
+msgstr "nur Kanal"
+
+msgid "simple"
+msgstr "einfach"
+
+msgid "complete"
+msgstr "komplett"
+
+msgid "top left"
+msgstr "oben links"
+
+msgid "top right"
+msgstr "oben rechts"
+
+msgid "bottom left"
+msgstr "unten links"
+
+msgid "bottom right"
+msgstr "unten rechts"
+
+msgid "automatic"
+msgstr "automatisch"
+
+msgid "none"
+msgstr "keine"
+
+msgid "1 frame"
+msgstr "1 Frame"
+
+msgid "2 frames"
+msgstr "2 Frames"
+
+msgid "X Position"
+msgstr "X-Position"
+
+msgid "Y Position"
+msgstr "Y-Position"
+
+msgid "Crop left"
+msgstr "Links abschneiden"
+
+msgid "Crop right"
+msgstr "Rechts abschneiden"
+
+msgid "Crop at top"
+msgstr "Oben abschneiden"
+
+msgid "Crop at bottom"
+msgstr "Unten abschneiden"
+
+msgid "Color depth"
+msgstr "Farbtiefe"
+
+msgid "Size"
+msgstr "Größe"
+
+msgid "Frames to display"
+msgstr "Darzustellende Bilder"
+
+msgid "Drop frames"
+msgstr "Einzelbilder auslassen"
+
+msgid "Swap FFMPEG output"
+msgstr "FFMPEG Ausgabe umdrehen"
+
+msgid "Show info window"
+msgstr "Info-Fenster anzeigen"
+
+msgid "Info window width"
+msgstr "Breite Info-Fenster"
+
+msgid "Info window position"
+msgstr "Position Info-Fenster"

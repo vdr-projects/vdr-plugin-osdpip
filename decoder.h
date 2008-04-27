@@ -10,32 +10,32 @@
 extern "C"
 {
 #ifdef HAVE_FFMPEG_STATIC
-#	include <avcodec.h>
+#   include <avcodec.h>
 #else
-#	include <ffmpeg/avcodec.h>
+#   include <ffmpeg/avcodec.h>
 #endif
 }
 
 class cDecoder {
 private:
-	AVCodec * m_Codec;
-	AVCodecContext * m_Context;
-	AVFrame * m_PicDecoded;
-	AVFrame * m_PicResample;
-	AVFrame * m_PicConvert;
-	unsigned char * m_BufferResample;
-	unsigned char * m_BufferConvert;
-	int m_Width;
-	int m_Height;
+    AVCodec * m_Codec;
+    AVCodecContext * m_Context;
+    AVFrame * m_PicDecoded;
+    AVFrame * m_PicResample;
+    AVFrame * m_PicConvert;
+    unsigned char * m_BufferResample;
+    unsigned char * m_BufferConvert;
+    int m_Width;
+    int m_Height;
 public:
-	int Open();
-	int Close();
-	int Decode(unsigned char * data, int length);
-	int Resample(int width, int height);
-	int ConvertToRGB();
-	AVFrame * PicResample() { return m_PicResample; }
-	AVFrame * PicConvert() { return m_PicConvert; }
-	double AspectRatio();
+    int Open();
+    int Close();
+    int Decode(unsigned char * data, int length);
+    int Resample(int width, int height);
+    int ConvertToRGB();
+    AVFrame * PicResample() { return m_PicResample; }
+    AVFrame * PicConvert() { return m_PicConvert; }
+    double AspectRatio();
 };
 
 #endif // VDR_OSDPIP_DECODER_H

@@ -13,7 +13,7 @@ See the file COPYING for license information.
 Requirements:
 -------------
 
-- vdr 1.3.8 or higher
+- vdr 1.3.47 or higher, tested here with 1.4.7 and 1.6.0
 - libavcodec from ffmpeg (http://ffmpeg.sourceforge.net) version 0.4.8 or
   higher
 
@@ -21,14 +21,15 @@ Requirements:
 Description:
 ------------
 
-OSD Picture-in-Picture is a PlugIn that displays the current channel in a 
-small box on the screen (default upper right corner). You can switch up and 
-down now, watching the progress of the previous channel in the box. Quality is 
-not too good yet, and only I-Frames are displayed. 
-The plugin supports four modes:
+OSD Picture-in-Picture is a PlugIn that displays the current channel in a
+small box on the screen (default upper right corner). You can switch up and
+down now, watching the progress of the previous channel in the box. Quality is
+not too good yet, and only I-Frames are displayed.
+The plugin supports five modes:
  - greyscaled (16 shades of grey)
  - greyscaled (256 shades of grey)
  - 256 colors with fixed palette
+ - 256 colors with dithering
  - 128 colors with variable palette
 They all work with an ordinary vdr installation.
 The plugin has the possibility to choose the PiP size (in the setup menu from
@@ -50,21 +51,14 @@ the amount of information shown.
 Installation:
 -------------
 
-Let's say osdpip's version is 0.0.1 and vdr's version is 1.3.8. If you 
+Let's say osdpip's version is 0.0.9 and vdr's version is 1.4.0. If you
 use anything else please exchange the version numbers appropriately (this
 way I don't have to update this section all the times;) ).
 
-cd vdr-1.3.8/PLUGINS/src
-tar xvfz vdr-osdpip-0.0.1.tgz
-ln -s osdpip-0.0.1 osdpip
+cd vdr-1.4.0/PLUGINS/src
+tar xvfz vdr-osdpip-0.0.9.tgz
+ln -s osdpip-0.0.9 osdpip
 cd ../..
-
-If you have a VDR version lower than 1.2.25, you will have to patch it using
-the file vdr-osd.diff. This patch fixes a bug in VDR regardings osd usage.
-
-patch -p1 < PLUGINS/src/osdpip/patches/vdr-osd.diff
-
-After applying it you have to recompile your VDR.
 
 If you have ffmpeg installed, "make plugins" should do just fine now, but if
 you have it next to your vdr folder (e.g. as the DXR3 plugin needs it), you
@@ -90,4 +84,3 @@ Cursor keys  Move PiP window around
 Green        Switch to normal mode
 0            Switch back to PiP channel and exit PiP
 Back         Exit PiP without switching back
-

@@ -16,21 +16,20 @@ class cRemux;
 
 class cOsdPipReceiver: public cReceiver, public cThread {
 private:
-	cRingBufferLinear *m_TSBuffer;
-	cRingBufferFrame *m_ESBuffer;
-	cRemux *m_Remux;
+    cRingBufferLinear *m_TSBuffer;
+    cRingBufferFrame *m_ESBuffer;
+    cRemux *m_Remux;
 
-	bool m_Active;
+    bool m_Active;
 
 protected:
-	virtual void Activate(bool On);
-	virtual void Receive(uchar *Data, int Length);
-	virtual void Action(void);
+    virtual void Activate(bool On);
+    virtual void Receive(uchar *Data, int Length);
+    virtual void Action(void);
 
 public:
-	cOsdPipReceiver::cOsdPipReceiver(const cChannel *Channel, 
-			cRingBufferFrame *ESBuffer);
-	virtual ~cOsdPipReceiver();
+    cOsdPipReceiver(const cChannel *Channel, cRingBufferFrame *ESBuffer);
+    virtual ~cOsdPipReceiver();
 };
 
 #endif // VDR_OSDPIP_RECEIVER_H
