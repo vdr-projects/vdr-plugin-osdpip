@@ -655,6 +655,25 @@ const tI18nPhrase Phrases[] = {
         "", // Russian
         "", // Croatian
     },
+    {   "Zapping mode", // English
+        "Umschaltmodus", // Deutsch
+        "", // Slovenski
+        "", // Italiano
+        "", // Nederlands
+        "", // Português
+        "", // Français
+        "", // Norsk
+        "", // Suomi
+        "", // Polski
+        "", // Español
+        "", // Ellinika
+        "", // Svenska
+        "", // Romaneste
+        "", // Magyar
+        "", // Catala
+        "", // Russian
+        "", // Croatian
+    },
     { NULL }
 };
 

@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: VDR 1.5.7\n"
 "Report-Msgid-Bugs-To: <andreas.regel@powarman.de>\n"
-"POT-Creation-Date: 2008-04-27 18:04+0200\n"
+"POT-Creation-Date: 2008-05-03 21:57+0200\n"
 "PO-Revision-Date: 2008-04-27 18:00+0200\n"
 "Last-Translator: Vladimír Bárta <vladimir.barta@k2atmitec.cz>\n"
 "Language-Team: <vdr@linuxtv.org>\n"
@@ -15,10 +15,13 @@ msgstr ""
 "Content-Type: text/plain; charset=ISO-8859-2\n"
 "Content-Transfer-Encoding: 8bit\n"
 
+msgid "Move mode"
+msgstr ""
+
 msgid "Normal mode"
 msgstr ""
 
-msgid "Move mode"
+msgid "Zapping mode"
 msgstr ""
 
 msgid "OSD Picture-in-Picture"

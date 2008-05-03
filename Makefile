@@ -3,6 +3,18 @@
 #
 # $Id: Makefile,v 1.1.1.1 2004/11/19 16:45:31 lordjaxom Exp $
 
+# You can change the compile options here or create a Make.config
+# in the VDR directory an set them there.
+#
+### uncomment the following line, if you don't want to use swscale functions
+### for scaling and color format conversions. Then deprecated img_convert and
+### img_resample will be used instead.
+#WITHOUT_SWSCALE=1
+#
+### uncomment the following line, if you have a recent FFMPEG version that
+### has a changed structure of its header files.
+#WITH_NEW_FFMPEG_HEADERS=1
+
 # The official name of this plugin.
 # This name will be used in the '-P...' option of VDR to load the plugin.
 # By default the main source file also carries this name.
@@ -51,7 +63,20 @@ DEFINES += -D_GNU_SOURCE
 OBJS = $(PLUGIN).o osd_info.o osd.o receiver.o setup.o i18n.o pes.o quantize.o decoder.o
 
 ifdef FFMPEG_STATIC
-	DEFINES += -DHAVE_FFMPEG_STATIC
+    DEFINES += -DHAVE_FFMPEG_STATIC
+endif
+
+ifndef WITHOUT_SWSCALE
+    DEFINES += -DUSE_SWSCALE
+    ifneq ($(shell which pkg-config),)
+        LIBS += $(shell pkg-config --silence-errors --libs libswscale)
+    else
+        LIBS += -lswscale
+    endif
+endif
+
+ifdef WITH_NEW_FFMPEG_HEADERS
+    DEFINES += -DUSE_NEW_FFMPEG_HEADERS
 endif
 
 ### Implicit rules:

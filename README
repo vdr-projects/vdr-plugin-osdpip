@@ -5,7 +5,7 @@ Written by:                  Sascha Volkenandt <sascha@akv-soft.de>
 
 Project's homepage:          http://www.magoa.net/linux/index.php?view=osdpip
 
-Latest version available at: http://www.magoa.net/linux/index.php?view=osdpip
+Latest version available at: http://www.powarman.de/files/osdpip
 
 See the file COPYING for license information.
 
@@ -65,6 +65,16 @@ you have it next to your vdr folder (e.g. as the DXR3 plugin needs it), you
 have to compile with "make FFMPEG_STATIC=1 plugins". Ffmpeg must then be
 present in a folder (or symlink) called "ffmpeg".
 
+In recent FFMPEG versions the functions img_convert and img_replace where
+replaced by swscale functions. This are used by default. If you don't want to
+use swscale functions for scaling and color format conversions, you will have
+to add WITHOUT_SWSCALE=1 to your Make.config or uncomment this line in
+vdr-osdpip's Makefile. Then deprecated img_convert and img_resample will be
+used instead.
+
+If you have a recent FFMPEG version that has a changed structure of its header
+files you will have to add WITH_NEW_FFMPEG_HEADERS=1 to your Make.config or
+uncomment this line in vdr-osdpip's Makefile.
 
 Controls:
 ---------
@@ -75,6 +85,7 @@ Left/Right   Select channel group (only when info window enabled)
 1-9          Select channel (only when info window enabled)
 Red          Swap PiP channel with currently viewed channel
 Green        Switch to move mode
+Yellow       Switch to zapping mode
 Ok           Show/hide channel info window
 0            Switch back to PiP channel and exit PiP
 Back         Exit PiP without switching back
@@ -84,3 +95,12 @@ Cursor keys  Move PiP window around
 Green        Switch to normal mode
 0            Switch back to PiP channel and exit PiP
 Back         Exit PiP without switching back
+
+Zapping Mode:
+Up/Down      Switch PiP channel up/down
+Red          Swap PiP channel with currently viewed channel
+Green        Switch to move mode
+Yellow       Switch to normal mode
+0            Switch back to PiP channel and exit PiP
+Back         Exit PiP without switching back
+

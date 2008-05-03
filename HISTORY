@@ -1,6 +1,14 @@
 VDR Plugin 'osdpip' Revision History
 ------------------------------------
 
+2008-05-03: Version 0.0.10 (written by Andreas Regel)
+- support swscale functions of recent FFMPEG versions. Have a look at
+  README to see how to deactivate it for older FFPMEG versions.
+- support changed header file structure of recent FFMPEG versions. Have
+  a look at README to see how to activate this.
+- added zapping through PiP channel based on a patch by pinky666 from
+  vdr-portal. You can activate it via the green button.
+
 2008-04-27: Version 0.0.9 (written by Andreas Regel)
 - dropped support for VDR version lower than 1.3.47.
 - Now using palette replacemen introduced in VDR 1.4.27, so palette

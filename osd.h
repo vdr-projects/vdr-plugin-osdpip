@@ -17,6 +17,13 @@
 #include "decoder.h"
 #include "osd_info.h"
 
+typedef enum _ePipMode
+{
+    pipModeNormal,
+    pipModeMoving,
+    pipModeZapping
+} ePipMode;
+
 class cRingBufferFrame;
 class cOsdPipReceiver;
 class cQuantize;
@@ -33,7 +40,7 @@ private:
     bool m_Active;
     bool m_Ready;
     bool m_Reset;
-    bool m_MoveMode;
+    ePipMode m_PipMode;
     int m_Width, m_Height;
     int m_FrameDrop;
 
@@ -48,6 +55,7 @@ private:
 
     void Stop(void);
     void SwapChannels(void);
+    void SwitchOsdPipChan(int i);
 protected:
     virtual void Action(void);
     virtual void ChannelSwitch(const cDevice * device, int channelNumber);

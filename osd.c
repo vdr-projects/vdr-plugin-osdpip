@@ -31,7 +31,7 @@ cOsdPipObject::cOsdPipObject(cDevice *Device, const cChannel *Channel)
     m_Active = false;
     m_Ready = false;
     m_Reset = true;
-    m_MoveMode = false;
+    m_PipMode = pipModeNormal;
     m_Width = m_Height = -1;
     m_Bitmap = NULL;
     m_InfoWindow = NULL;
@@ -89,6 +89,31 @@ void cOsdPipObject::SwapChannels(void)
             dev->AttachReceiver(m_Receiver);
         }
         Start();
+    }
+}
+
+void cOsdPipObject::SwitchOsdPipChan(int i)
+{
+    const cChannel *pipChan = m_Channel;
+    pipChan = Channels.GetByNumber(m_Channel->Number() + i );
+    if (pipChan)
+    {
+        Stop();
+        DELETENULL(m_Receiver);
+#if (APIVERSNUM < 10500)
+        cDevice *dev = cDevice::GetDevice(pipChan, 1);
+#else
+        cDevice *dev = cDevice::GetDevice(pipChan, 1, false);
+#endif
+        if (dev)
+        {
+            m_Channel = pipChan;
+            dev->SwitchChannel(m_Channel, false);
+            m_Receiver = new cOsdPipReceiver(m_Channel, m_ESBuffer);
+            dev->AttachReceiver(m_Receiver);
+        }
+        Start();
+        m_InfoWindow->Hide();
     }
 }
 
@@ -285,7 +310,9 @@ void cOsdPipObject::ProcessImage(unsigned char * data, int length)
         height = (int) ((float) m_Width / decoder.AspectRatio() * 16.0f / 15.0f + 0.5);
     else
         height = m_Height;
-    if (decoder.Resample(m_Width, height) != 0)
+    bool convertToRGB = OsdPipSetup.ColorDepth == kDepthColor256fix
+                        || OsdPipSetup.ColorDepth == kDepthColor128var;
+    if (decoder.Resample(m_Width, height, convertToRGB) != 0)
         return;
 
     int size;
@@ -364,12 +391,13 @@ void cOsdPipObject::ProcessImage(unsigned char * data, int length)
     else if (OsdPipSetup.ColorDepth == kDepthColor256fix ||
              OsdPipSetup.ColorDepth == kDepthColor128var)
     {
-        if (decoder.ConvertToRGB() != 0)
-            return;
-
         if (OsdPipSetup.SwapFfmpeg)
         {
+#ifdef USE_SWSCALE
+            unsigned int * bufPtr = (unsigned int *) decoder.PicResample()->data[0];
+#else
             unsigned int * bufPtr = (unsigned int *) decoder.PicConvert()->data[0];
+#endif
             unsigned char red, green, blue, alpha;
             for (int i = 0; i < size; i++)
             {
@@ -384,7 +412,11 @@ void cOsdPipObject::ProcessImage(unsigned char * data, int length)
             }
         }
 
+#ifdef USE_SWSCALE
+        quantizer->Quantize(decoder.PicResample()->data[0], size, 127);
+#else
         quantizer->Quantize(decoder.PicConvert()->data[0], size, 127);
+#endif
 
         outputPalette = quantizer->OutputPalette();
         outputImage = quantizer->OutputImage();
@@ -531,7 +563,47 @@ eOSState cOsdPipObject::ProcessKey(eKeys Key)
     eOSState state = cOsdObject::ProcessKey(Key);
     if (state == osUnknown)
     {
-        if (m_MoveMode)
+        if (m_PipMode == pipModeZapping)
+        {
+            switch (Key & ~k_Repeat)
+            {
+                case kNone:
+                    return osContinue;
+                case k0:
+                    Channels.SwitchTo(m_Channel->Number());
+                case kBack:
+                    return osEnd;
+                case kRed:
+                    SwapChannels();
+                    break;
+                case kGreen:
+                    m_PipMode = pipModeMoving;
+                    if (m_Ready && m_InfoWindow)
+                    {
+                        m_InfoWindow->SetMessage(tr("Move mode"));
+                        m_InfoWindow->Show();
+                    }
+                    break;
+                case kYellow:
+                    m_PipMode = pipModeNormal;
+                    if (m_Ready && m_InfoWindow)
+                    {
+                        m_InfoWindow->SetMessage(tr("Normal mode"));
+                        m_InfoWindow->Show();
+                    }
+                    break;
+                case kUp:
+                    SwitchOsdPipChan(1);
+                    break;
+                case kDown:
+                    SwitchOsdPipChan(-1);
+                    break;
+                default:
+                    return state;
+            }
+            state = osContinue;
+        }
+        else if (m_PipMode == pipModeMoving)
         {
             switch (Key & ~k_Repeat)
             {
@@ -540,10 +612,18 @@ eOSState cOsdPipObject::ProcessKey(eKeys Key)
                 case kBack:
                     return osEnd;
                 case kGreen:
-                    m_MoveMode = false;
+                    m_PipMode = pipModeNormal;
                     if (m_Ready && m_InfoWindow)
                     {
                         m_InfoWindow->SetMessage(tr("Normal mode"));
+                        m_InfoWindow->Show();
+                    }
+                    break;
+                case kYellow:
+                    m_PipMode = pipModeZapping;
+                    if (m_Ready && m_InfoWindow)
+                    {
+                        m_InfoWindow->SetMessage(tr("Zapping mode"));
                         m_InfoWindow->Show();
                     }
                     break;
@@ -590,10 +670,18 @@ eOSState cOsdPipObject::ProcessKey(eKeys Key)
                 SwapChannels();
                 break;
             case kGreen:
-                m_MoveMode = true;
+                m_PipMode = pipModeMoving;
                 if (m_Ready && m_InfoWindow)
                 {
                     m_InfoWindow->SetMessage(tr("Move mode"));
+                    m_InfoWindow->Show();
+                }
+                break;
+            case kYellow:
+                m_PipMode = pipModeZapping;
+                if (m_Ready && m_InfoWindow)
+                {
+                    m_InfoWindow->SetMessage(tr("Zapping mode"));
                     m_InfoWindow->Show();
                 }
                 break;

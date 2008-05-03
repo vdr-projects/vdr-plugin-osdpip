@@ -27,17 +27,21 @@ int cDecoder::Open()
     }
     m_PicDecoded = avcodec_alloc_frame();
     m_PicResample = avcodec_alloc_frame();
-    m_BufferResample = new unsigned char[(400 * 300 * 3) / 2]; // size for YUV 420
+    m_BufferResample = new unsigned char[400 * 300 * 4]; // size for RGBA32
+#ifndef USE_SWSCALE
     m_PicConvert = avcodec_alloc_frame();
     m_BufferConvert = new unsigned char[400 * 300 * 4]; // size for RGBA32
+#endif
 
     return 0;
 }
 
 int cDecoder::Close()
 {
+#ifndef USE_SWSCALE
     delete[] m_BufferConvert;
     free(m_PicConvert);
+#endif
     delete[] m_BufferResample;
     free(m_PicResample);
     avcodec_close(m_Context);
@@ -65,24 +69,47 @@ int cDecoder::Decode(unsigned char * data, int length)
     return 0;
 }
 
-int cDecoder::Resample(int width, int height)
+int cDecoder::Resample(int width, int height, bool ConvertToRGB)
 {
-    ImgReSampleContext * contextResample;
-
     m_Width = width;
     m_Height = height;
-#if LIBAVCODEC_BUILD < 4708
+
+#ifdef USE_SWSCALE
+    AVPicture pic_crop;
+    struct SwsContext * context;
+
+    av_picture_crop(&pic_crop, (AVPicture *) m_PicDecoded, PIX_FMT_YUV420P, OsdPipSetup.CropTop, OsdPipSetup.CropLeft);
+    context = sws_getContext(m_Context->width - (OsdPipSetup.CropLeft + OsdPipSetup.CropRight),
+                             m_Context->height - (OsdPipSetup.CropTop + OsdPipSetup.CropBottom),
+                             PIX_FMT_YUV420P,
+                             m_Width, m_Height, ConvertToRGB ? PIX_FMT_RGBA32 : PIX_FMT_YUV420P,
+                             SWS_LANCZOS, NULL, NULL, NULL);
+    if (!context) {
+        printf("Error initializing scale context.\n");
+        return -1;
+    }
+    avpicture_fill((AVPicture *) m_PicResample, m_BufferResample,
+                   ConvertToRGB ? PIX_FMT_RGBA32 : PIX_FMT_YUV420P,
+                   m_Width, m_Height);
+    sws_scale(context, pic_crop.data, pic_crop.linesize,
+              0, m_Context->height - (OsdPipSetup.CropTop + OsdPipSetup.CropBottom),
+              m_PicResample->data, m_PicResample->linesize);
+    sws_freeContext(context);
+#else
+    ImgReSampleContext * contextResample;
+
+  #if LIBAVCODEC_BUILD < 4708
     contextResample = img_resample_full_init(m_Width, m_Height,
             m_Context->width, m_Context->height,
             OsdPipSetup.CropTop, OsdPipSetup.CropBottom,
             OsdPipSetup.CropLeft, OsdPipSetup.CropRight);
-#else
+  #else
     contextResample = img_resample_full_init(m_Width, m_Height,
             m_Context->width, m_Context->height,
             OsdPipSetup.CropTop, OsdPipSetup.CropBottom,
             OsdPipSetup.CropLeft, OsdPipSetup.CropRight,
             0, 0, 0, 0);
-#endif
+  #endif
     if (!contextResample) {
         printf("Error initializing resample context.\n");
         return -1;
@@ -91,17 +118,15 @@ int cDecoder::Resample(int width, int height)
             PIX_FMT_YUV420P, m_Width, m_Height);
     img_resample(contextResample, (AVPicture *) m_PicResample, (AVPicture *) m_PicDecoded);
     img_resample_close(contextResample);
-
-    return 0;
-}
-
-int cDecoder::ConvertToRGB()
-{
-    avpicture_fill((AVPicture *) m_PicConvert, m_BufferConvert,
-            PIX_FMT_RGBA32, m_Width, m_Height);
-    img_convert((AVPicture *) m_PicConvert, PIX_FMT_RGBA32,
+    if (ConvertToRGB)
+    {
+        avpicture_fill((AVPicture *) m_PicConvert, m_BufferConvert,
+                PIX_FMT_RGBA32, m_Width, m_Height);
+        img_convert((AVPicture *) m_PicConvert, PIX_FMT_RGBA32,
                 (AVPicture *) m_PicResample, PIX_FMT_YUV420P,
                 m_Width, m_Height);
+    }
+#endif
 
     return 0;
 }

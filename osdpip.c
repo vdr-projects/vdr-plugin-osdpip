@@ -4,15 +4,7 @@
  * See the README file for copyright information and how to reach the author.
  */
 
-extern "C"
-{
-#ifdef HAVE_FFMPEG_STATIC
-# include <avcodec.h>
-#else
-# include <ffmpeg/avcodec.h>
-#endif
-}
-
+#include "decoder.h"
 #include "osd.h"
 #include "setup.h"
 #if (APIVERSNUM < 10507)
@@ -21,7 +13,7 @@ extern "C"
 
 #include <vdr/plugin.h>
 
-static const char *VERSION        = "0.0.9";
+static const char *VERSION        = "0.0.10";
 static const char *DESCRIPTION    = trNOOP("OSD Picture-in-Picture");
 static const char *MAINMENUENTRY  = trNOOP("Picture-in-Picture");
 
