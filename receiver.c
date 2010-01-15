@@ -7,9 +7,14 @@
 #include "receiver.h"
 #include "pes.h"
 #include "setup.h"
+#if VDRVERSNUM > 10703
+#include "remux.h"
+#endif
 
 #include <vdr/channels.h>
+#if VDRVERSNUM <= 10703
 #include <vdr/remux.h>
+#endif
 #include <vdr/ringbuffer.h>
 
 cOsdPipReceiver::cOsdPipReceiver(const cChannel *Channel,
@@ -24,7 +29,11 @@ cOsdPipReceiver::cOsdPipReceiver(const cChannel *Channel,
     m_TSBuffer = new cRingBufferLinear(MEGABYTE(3), TS_SIZE * 2, true);
     m_TSBuffer->SetTimeouts(0, 100);
     m_ESBuffer = ESBuffer;
+#if VDRVERSNUM > 10703
+    m_Remux = new cRemuxPIP(Channel->Vpid(), NULL, NULL, NULL, true);
+#else
     m_Remux = new cRemux(Channel->Vpid(), NULL, NULL, NULL, true);
+#endif
     m_Active = false;
 }
 

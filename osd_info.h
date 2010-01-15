@@ -35,7 +35,7 @@ public:
     ~cOsdInfoWindow();
     void SetMessage(const char * message);
     void SetChannel(const cChannel * channel);
-    void Show();
+    void Show(bool Refresh = false);
     void Hide();
     eOSState ProcessKey(eKeys key);
 

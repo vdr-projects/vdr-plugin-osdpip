@@ -5,6 +5,8 @@
 #include <vdr/device.h>
 #include <vdr/thread.h>
 
+#include <vdr/menu.h>
+
 #define DIRECTCHANNELTIMEOUT 1
 #define INFOTIMEOUT          5
 
@@ -44,74 +46,112 @@ void cOsdInfoWindow::SetChannel(const cChannel * channel)
     m_Group = -1;
 }
 
-void cOsdInfoWindow::Show()
+void cOsdInfoWindow::Show(bool Refresh)
 {
     char channel[101] = "";
     char presentName[101] = "";
     char presentTime[10] = "";
     char followingName[101] = "";
     char followingTime[10] = "";
-
+    double progress = 0.0;
+    int pos, end;
+    char *tmp = NULL;
+    static bool lastMsg;
+    
     if (m_Message)
     {
         snprintf(channel, 100, "%s", m_Message);
-        m_Message = NULL;
     }
-    else if (m_Channel)
+    else if (!(cReplayControl::NowReplaying() && cControl::Control()))
     {
-        if (m_Channel->GroupSep())
-            snprintf(channel, 100, "%s", m_Channel->Name());
-        else
-            snprintf(channel, 100, "%d%s  %s", m_Channel->Number(), m_Number ? "-" : "", m_Channel->Name());
-        if (m_WithInfo)
+        if (m_Channel)
         {
-            const cEvent * present = NULL;
-            const cEvent * following = NULL;
-            cSchedulesLock schedulesLock;
-            const cSchedules * schedules = cSchedules::Schedules(schedulesLock);
-            if (schedules)
+            if (m_Channel->GroupSep())
+                snprintf(channel, 100, "%s", m_Channel->Name());
+            else
+                snprintf(channel, 100, "%d%s  %s", m_Channel->Number(), m_Number ? "-" : "", m_Channel->Name());
+            if (m_WithInfo)
             {
-                const cSchedule * schedule = schedules->GetSchedule(m_Channel->GetChannelID());
-                if (schedule)
+                const cEvent * present = NULL;
+                const cEvent * following = NULL;
+                cSchedulesLock schedulesLock;
+                const cSchedules * schedules = cSchedules::Schedules(schedulesLock);
+                if (schedules)
                 {
-                    if ((present = schedule->GetPresentEvent()) != NULL)
+                    const cSchedule * schedule = schedules->GetSchedule(m_Channel->GetChannelID());
+                    if (schedule)
                     {
-                        const char * presentTitle = present->Title();
-                        if (!isempty(presentTitle))
+                        if ((present = schedule->GetPresentEvent()) != NULL)
                         {
-                            sprintf(presentTime, "%s", (const char *) present->GetTimeString());
-                            sprintf(presentName, "%s", (const char *) presentTitle);
+                            const char * presentTitle = present->Title();
+                            if (!isempty(presentTitle))
+                            {
+                                sprintf(presentTime, "%s", (const char *) present->GetTimeString());
+                                sprintf(presentName, "%s", (const char *) presentTitle);
+                                progress = double(time(NULL) - present->StartTime()) / double(present->EndTime() - present->StartTime());
+                            }
                         }
-                    }
-                    if ((following = schedule->GetFollowingEvent()) != NULL)
-                    {
-                        const char * followingTitle = following->Title();
-                        if (!isempty(followingTitle))
+                        if ((following = schedule->GetFollowingEvent()) != NULL)
                         {
-                            sprintf(followingTime, "%s", (const char *) following->GetTimeString());
-                            sprintf(followingName, "%s", (const char *) followingTitle);
+                            const char * followingTitle = following->Title();
+                            if (!isempty(followingTitle))
+                            {
+                                sprintf(followingTime, "%s", (const char *) following->GetTimeString());
+                                sprintf(followingName, "%s", (const char *) followingTitle);
+                            }
                         }
                     }
                 }
             }
         }
+        else if (m_Number)
+        {
+            snprintf(channel, 100, "%d-", m_Number);
+        }
+        else
+            snprintf(channel, 100, "%s", trVDR("*** Invalid Channel ***"));
     }
-    else if (m_Number)
-        snprintf(channel, 100, "%d-", m_Number);
     else
-        snprintf(channel, 100, "%s", trVDR("*** Invalid Channel ***"));
+    {
+        cControl::Control()->GetIndex(pos, end);
+        cRecording *rec = new cRecording(cReplayControl::NowReplaying());
+        asprintf(&tmp, "%s (%s/%s)", rec->Name(), (const char *)IndexToHMSF(pos), (const char *)IndexToHMSF(end));
+        while (strchr(tmp, '~'))
+        {
+            tmp = strchr(tmp, '~');
+            tmp++;
+        }
+        snprintf(channel, 100, "%s", tmp);
+        delete(rec);
+        rec = NULL;
+    }
 
     Mutex.Lock();
     if (OsdPipSetup.ColorDepth == kDepthGrey16)
     {
-        m_Bitmap->DrawRectangle(0, 0, m_Bitmap->Width() - 1, m_Bitmap->Height() - 1, clrBlack);
+        if (!m_Shown || Refresh  || (!m_Message && lastMsg))
+            m_Bitmap->DrawRectangle(0, 0, m_Bitmap->Width() - 1, m_Bitmap->Height() - 1, clrBlack);
         const cFont * font = cFont::GetFont(fontOsd);
 
-        m_Bitmap->DrawText(0, 0, channel, clrWhite, clrBlack, font, m_Bitmap->Width(), 29);
+        m_Bitmap->DrawText((cControl::Control() && cReplayControl::NowReplaying()) || m_Message ? 0 : 20, 0, channel, clrWhite, clrBlack, font, m_Bitmap->Width(), 29);
         if (m_Bitmap->Height() > 30)
         {
-            m_Bitmap->DrawText(0, 30, presentTime, clrWhite, clrBlack, font, 80, 29);
-            m_Bitmap->DrawText(80, 30, presentName, clrWhite, clrBlack, font, m_Bitmap->Width() - 80, 29);
+            if (cReplayControl::NowReplaying() && cControl::Control() && !m_Message) {
+                m_Bitmap->DrawRectangle(0, 30, m_Bitmap->Width() - 1, m_Bitmap->Height() - 1, clrBlack);
+                cControl::Control()->GetIndex(pos, end);
+                m_Bitmap->DrawRectangle(2, 36, m_Bitmap->Width() - 4, m_Bitmap->Height() - 8, clrWhite);
+                m_Bitmap->DrawRectangle(4, 38, (m_Bitmap->Width() - 6) * double(pos) / double(end), m_Bitmap->Height() - 10, clrGreen);
+            } else
+            {
+                m_Bitmap->DrawText(20, 30, presentTime, clrWhite, clrTransparent, font, 80, 29);
+                m_Bitmap->DrawText(100, 30, presentName, clrWhite, clrTransparent, font, m_Bitmap->Width() - 80, 29);
+                if (progress != 0)
+                {
+                    m_Bitmap->DrawRectangle(6, 1, 14, m_Bitmap->Height() - 1, clrWhite);
+                    m_Bitmap->DrawRectangle(7, 2, 13, (m_Bitmap->Height() - 1) * progress, clrGreen);
+                    m_Bitmap->DrawRectangle(7, (m_Bitmap->Height() - 1) * progress, 13, m_Bitmap->Height() - 2, clrBlack);
+                }
+            }
         }
         if (m_Bitmap->Height() > 2*30)
         {
@@ -122,29 +162,53 @@ void cOsdInfoWindow::Show()
     else
     {
         m_Palette[0] = 0xFF000000;
-        m_Palette[255] = 0x00FFFFFF;
-        m_Bitmap->DrawRectangle(0, 0, m_Bitmap->Width() - 1, m_Bitmap->Height() - 1, m_Palette[0]);
+        m_Palette[255] = 0xFFFFFFFF;
+        if (!m_Shown || Refresh || (!m_Message && lastMsg))
+        {
+            m_Bitmap->DrawRectangle(0, 0, m_Bitmap->Width() - 1, m_Bitmap->Height() - 1, m_Palette[0]);
+        }
         for (int i = 0; i < 256; i++)
             m_Bitmap->SetColor(i, m_Palette[i]);
-        m_Osd->DrawBitmap(m_InfoX, m_InfoY, *m_Bitmap, 0, 0, true);
-        m_Osd->Flush();
-        m_Palette[255] = 0xFFFFFFFF;
-        m_Bitmap->DrawRectangle(0, 0, m_Bitmap->Width() - 1, m_Bitmap->Height() - 1, m_Palette[0]);
+        if (!m_Shown || Refresh)
+        {
+            m_Osd->DrawBitmap(m_InfoX, m_InfoY, *m_Bitmap, 0, 0, true);
+            m_Osd->Flush();
+            m_Palette[255] = 0xFFFFFFFF;
+            m_Bitmap->DrawRectangle(0, 0, m_Bitmap->Width() - 1, m_Bitmap->Height() - 1, m_Palette[0]);
+        }
         for (int i = 0; i < 256; i++)
             m_Bitmap->SetColor(i, m_Palette[i]);
         const cFont *font = cFont::GetFont(fontOsd);
-        m_Bitmap->DrawText(0, 0, channel, m_Palette[255], m_Palette[0], font, m_Bitmap->Width(), 29);
+        m_Bitmap->DrawText((cControl::Control() && cReplayControl::NowReplaying()) || m_Message ? 0 : 20, 0, channel, m_Palette[255], m_Palette[0], font, m_Bitmap->Width(), 29);
         if (m_Bitmap->Height() > 30)
         {
-            m_Bitmap->DrawText(0, 30, presentTime, m_Palette[255], m_Palette[0], font, 80, 29);
-            m_Bitmap->DrawText(80, 30, presentName, m_Palette[255], m_Palette[0], font, m_Bitmap->Width() - 80, 29);
+            if (cReplayControl::NowReplaying() && cControl::Control() && !m_Message)
+            {
+                m_Bitmap->DrawRectangle(0, 30, m_Bitmap->Width() - 1, m_Bitmap->Height() - 1, m_Palette[0]);
+                cControl::Control()->GetIndex(pos, end);
+                m_Bitmap->DrawRectangle(2, 36, m_Bitmap->Width() - 4, m_Bitmap->Height() - 8, m_Palette[255]);
+                m_Bitmap->DrawRectangle(4, 38, (m_Bitmap->Width() - 6) * double(pos) / double(end), m_Bitmap->Height() - 10, OsdPipSetup.ColorDepth == kDepthColor128var ? m_Palette[0] : clrGreen);
+            } else
+            {
+                m_Bitmap->DrawText(20, 30, presentTime, m_Palette[255], m_Palette[0], font, 80, 29);
+                m_Bitmap->DrawText(100, 30, presentName, m_Palette[255], m_Palette[0], font, m_Bitmap->Width() - 80, 29);
+                if (progress != 0)
+                {
+                    m_Bitmap->DrawRectangle(6, 1, 14, m_Bitmap->Height() - 1, OsdPipSetup.ColorDepth == kDepthColor128var ? m_Palette[255] : m_Palette[0]);
+                    m_Bitmap->DrawRectangle(7, 2, 13, (m_Bitmap->Height() - 1) * progress, OsdPipSetup.ColorDepth == kDepthColor128var ? m_Palette[255] : clrGreen);
+                    m_Bitmap->DrawRectangle(7, (m_Bitmap->Height() - 1) * progress, 13, m_Bitmap->Height() - 2, OsdPipSetup.ColorDepth == kDepthColor128var ? m_Palette[0] : m_Palette[255]);
+                }
+            }
         }
         if (m_Bitmap->Height() > 2*30)
         {
-            m_Bitmap->DrawText(0, 2*30, followingTime, m_Palette[255], m_Palette[0], font, 80, 29);
-            m_Bitmap->DrawText(80, 2*30, followingName, m_Palette[255], m_Palette[0], font, m_Bitmap->Width() - 80, 29);
+            m_Bitmap->DrawText(20, 2*30, followingTime, m_Palette[255], m_Palette[0], font, 80, 29);
+            m_Bitmap->DrawText(100, 2*30, followingName, m_Palette[255], m_Palette[0], font, m_Bitmap->Width() - 80, 29);
         }
     }
+    tmp = NULL;
+    lastMsg = (m_Message != NULL);
+    m_Message = NULL;
     m_Osd->DrawBitmap(m_InfoX, m_InfoY, *m_Bitmap, 0, 0, true);
     m_Osd->Flush();
     m_Shown = true;
@@ -197,7 +261,7 @@ eOSState cOsdInfoWindow::ProcessKey(eKeys key)
                     cChannel * channel = Channels.GetByNumber(m_Number);
                     m_Channel = channel;
                     m_WithInfo = false;
-                    Show();
+                    Show(true);
                     // Lets see if there can be any useful further input:
                     int n = channel ? m_Number * 10 : 0;
                     while (channel && (channel = Channels.Next(channel)) != NULL)
@@ -311,7 +375,7 @@ eOSState cOsdInfoWindow::ProcessKey(eKeys key)
                 {
                     m_Group = -1;
                     m_Number = 0;
-                    m_Channel = Channels.Get(cDevice::CurrentChannel());
+                    m_Channel = Channels.GetByNumber(cDevice::CurrentChannel());
                     m_WithInfo = true;
                     Hide();
                 }

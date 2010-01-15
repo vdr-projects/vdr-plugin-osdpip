@@ -21,7 +21,8 @@ typedef enum _ePipMode
 {
     pipModeNormal,
     pipModeMoving,
-    pipModeZapping
+    pipModeZapping,
+    pipModeReplay
 } ePipMode;
 
 class cRingBufferFrame;
@@ -56,6 +57,7 @@ private:
     void Stop(void);
     void SwapChannels(void);
     void SwitchOsdPipChan(int i);
+    void StopReplay();
 protected:
     virtual void Action(void);
     virtual void ChannelSwitch(const cDevice * device, int channelNumber);
@@ -64,7 +66,6 @@ protected:
 public:
     cOsdPipObject(cDevice *Device, const cChannel *Channel);
     virtual ~cOsdPipObject(void);
-
     virtual void Show(void);
     eOSState ProcessKey(eKeys k);
 };

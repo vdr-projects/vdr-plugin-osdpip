@@ -1,6 +1,10 @@
 VDR Plugin 'osdpip' Revision History
 ------------------------------------
 
+2010-01-01: Version 0.0.10a
+- added support for VDR 1.7.x
+- added PIP while replaying
+
 2008-05-03: Version 0.0.10 (written by Andreas Regel)
 - support swscale functions of recent FFMPEG versions. Have a look at
   README to see how to deactivate it for older FFPMEG versions.

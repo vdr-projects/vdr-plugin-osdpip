@@ -20,9 +20,9 @@ extern "C"
     #include <libswscale/swscale.h>
   #endif
 #else
-  #include <ffmpeg/avcodec.h>
+  #include <libavcodec/avcodec.h>
   #ifdef USE_SWSCALE
-    #include <ffmpeg/swscale.h>
+    #include <libswscale/swscale.h>
   #endif
 #endif
 }

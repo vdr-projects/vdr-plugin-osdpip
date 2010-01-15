@@ -1,0 +1,20 @@
+diff -Nur /usr/local/src/vdr-1.7.10/PLUGINS/src/osdpip-0.0.10a/decoder.c.orig /usr/local/src/vdr-1.7.10/PLUGINS/src/osdpip-0.0.10a/decoder.c
+--- /usr/local/src/vdr-1.7.10/PLUGINS/src/osdpip-0.0.10a/decoder.c.orig 2010-01-02 11:36:19.000000000 +0100
++++ /usr/local/src/vdr-1.7.10/PLUGINS/src/osdpip-0.0.10a/decoder.c      2010-01-02 11:37:12.000000000 +0100
+@@ -82,14 +82,14 @@
+     context = sws_getContext(m_Context->width - (OsdPipSetup.CropLeft + OsdPipSetup.CropRight),
+                              m_Context->height - (OsdPipSetup.CropTop + OsdPipSetup.CropBottom),
+                              PIX_FMT_YUV420P,
+-                             m_Width, m_Height, ConvertToRGB ? PIX_FMT_RGBA32 : PIX_FMT_YUV420P,
++                             m_Width, m_Height, ConvertToRGB ? PIX_FMT_RGB32 : PIX_FMT_YUV420P,
+                              SWS_LANCZOS, NULL, NULL, NULL);
+     if (!context) {
+         printf("Error initializing scale context.\n");
+         return -1;
+     }
+     avpicture_fill((AVPicture *) m_PicResample, m_BufferResample,
+-                   ConvertToRGB ? PIX_FMT_RGBA32 : PIX_FMT_YUV420P,
++                   ConvertToRGB ? PIX_FMT_RGB32 : PIX_FMT_YUV420P,
+                    m_Width, m_Height);
+     sws_scale(context, pic_crop.data, pic_crop.linesize,
+               0, m_Context->height - (OsdPipSetup.CropTop + OsdPipSetup.CropBottom),

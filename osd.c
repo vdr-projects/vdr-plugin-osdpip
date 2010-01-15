@@ -13,10 +13,17 @@
 #include "quantize.h"
 #include "receiver.h"
 #include "setup.h"
+#if VDRVERSNUM > 10703
+#include "remux.h"
+#endif
 
 #include <vdr/ringbuffer.h>
+#if VDRVERSNUM <= 10703
 #include <vdr/remux.h>
+#endif
 #include <vdr/thread.h>
+
+#include <vdr/menu.h>
 
 cMutex Mutex;
 
@@ -31,7 +38,7 @@ cOsdPipObject::cOsdPipObject(cDevice *Device, const cChannel *Channel)
     m_Active = false;
     m_Ready = false;
     m_Reset = true;
-    m_PipMode = pipModeNormal;
+    m_PipMode = (cDevice::PrimaryDevice()->Replaying() && cControl::Control()) ? pipModeReplay : pipModeNormal;
     m_Width = m_Height = -1;
     m_Bitmap = NULL;
     m_InfoWindow = NULL;
@@ -109,11 +116,12 @@ void cOsdPipObject::SwitchOsdPipChan(int i)
         {
             m_Channel = pipChan;
             dev->SwitchChannel(m_Channel, false);
+            m_InfoWindow->SetMessage(tr("Zapping mode"));
+            m_InfoWindow->Show(true);
             m_Receiver = new cOsdPipReceiver(m_Channel, m_ESBuffer);
             dev->AttachReceiver(m_Receiver);
         }
         Start();
-        m_InfoWindow->Hide();
     }
 }
 
@@ -210,6 +218,9 @@ void cOsdPipObject::ProcessImage(unsigned char * data, int length)
             int infoX = 0;
             int infoY = 0;
             int infoH = OsdPipSetup.ShowInfo * 30;
+            if (cReplayControl::NowReplaying() && OsdPipSetup.ShowInfo >= 2) {
+                infoH = 60;
+            }
 
             switch (OsdPipSetup.InfoPosition)
             {
@@ -469,7 +480,17 @@ void cOsdPipObject::ProcessImage(unsigned char * data, int length)
         if (OsdPipSetup.ShowInfo)
         {
             m_InfoWindow->SetChannel(Channels.GetByNumber(cDevice::ActualDevice()->CurrentChannel()));
-            m_InfoWindow->Show();
+            switch (m_PipMode)
+            {
+                case pipModeZapping:
+                    m_InfoWindow->SetMessage(tr("Zapping mode"));
+                    break;
+                case pipModeMoving:
+                    m_InfoWindow->SetMessage(tr("Move mode"));
+                    break;
+                default: ;
+            }
+            m_InfoWindow->Show(true);
         }
         m_Ready = true;
     }
@@ -481,6 +502,11 @@ void cOsdPipObject::ProcessImage(unsigned char * data, int length)
 
 void cOsdPipObject::Action(void)
 {
+    int pos, end;
+    bool Play, Fwd;
+    int Spd;
+    static int pPos;
+    static time_t tme;
     m_Active = true;
 
     isyslog("osdpip: decoder thread started (pid = %d)", getpid());
@@ -543,6 +569,27 @@ void cOsdPipObject::Action(void)
             }
         }
         cCondWait::SleepMs(1);
+        if (cDevice::PrimaryDevice()->Replaying() && cControl::Control()) {
+            cControl::Control()->GetReplayMode(Play, Fwd, Spd);
+            cControl::Control()->GetIndex(pos, end);
+            if ((Play && Fwd && pos == pPos) || pos >= (end - 1))
+            {
+                if (tme == 0)
+                {
+                    tme = time(NULL) + 3;
+                }
+                if (tme < time(NULL))
+                {
+                    tme = 0;
+                    StopReplay();
+                }
+            }
+            if (!Play || !Fwd || pPos != pos)
+            {
+                tme = 0;
+                pPos = pos;
+            }
+        }
     }
 
     if (OsdPipSetup.ColorDepth == kDepthColor128var ||
@@ -558,8 +605,21 @@ void cOsdPipObject::Show(void)
     Start();
 }
 
+void cOsdPipObject::StopReplay(void)
+{
+    cControl::Control()->ProcessKey(kStop);
+    cDevice::PrimaryDevice()->StopReplay();
+    if (m_InfoWindow->Shown())
+        m_InfoWindow->Hide();
+    Channels.SwitchTo(cDevice::CurrentChannel());
+}
+  
 eOSState cOsdPipObject::ProcessKey(eKeys Key)
 {
+    static cString pPos = "";
+    int pos, end;
+    bool replay = (cReplayControl::NowReplaying() && cControl::Control());
+
     eOSState state = cOsdObject::ProcessKey(Key);
     if (state == osUnknown)
     {
@@ -581,7 +641,7 @@ eOSState cOsdPipObject::ProcessKey(eKeys Key)
                     if (m_Ready && m_InfoWindow)
                     {
                         m_InfoWindow->SetMessage(tr("Move mode"));
-                        m_InfoWindow->Show();
+                        m_InfoWindow->Show(true);
                     }
                     break;
                 case kYellow:
@@ -589,13 +649,26 @@ eOSState cOsdPipObject::ProcessKey(eKeys Key)
                     if (m_Ready && m_InfoWindow)
                     {
                         m_InfoWindow->SetMessage(tr("Normal mode"));
-                        m_InfoWindow->Show();
+                        m_InfoWindow->Show(true);
+                    }
+                    break;
+                case kBlue:
+                    if (replay)
+                    {
+                        m_PipMode = pipModeReplay;
+                        if (m_Ready && m_InfoWindow)
+                        {
+                            m_InfoWindow->SetMessage(tr("Replay mode"));
+                            m_InfoWindow->Show(true);
+                        }
                     }
                     break;
                 case kUp:
+                case kChanUp:
                     SwitchOsdPipChan(1);
                     break;
                 case kDown:
+                case kChanDn:
                     SwitchOsdPipChan(-1);
                     break;
                 default:
@@ -616,7 +689,7 @@ eOSState cOsdPipObject::ProcessKey(eKeys Key)
                     if (m_Ready && m_InfoWindow)
                     {
                         m_InfoWindow->SetMessage(tr("Normal mode"));
-                        m_InfoWindow->Show();
+                        m_InfoWindow->Show(true);
                     }
                     break;
                 case kYellow:
@@ -624,7 +697,18 @@ eOSState cOsdPipObject::ProcessKey(eKeys Key)
                     if (m_Ready && m_InfoWindow)
                     {
                         m_InfoWindow->SetMessage(tr("Zapping mode"));
-                        m_InfoWindow->Show();
+                        m_InfoWindow->Show(true);
+                    }
+                    break;
+                case kBlue:
+                    if (replay)
+                    {
+                        m_PipMode = pipModeReplay;
+                        if (m_Ready && m_InfoWindow)
+                        {
+                            m_InfoWindow->SetMessage(tr("Replay mode"));
+                            m_InfoWindow->Show(true);
+                        }
                     }
                     break;
                 case kUp:
@@ -650,10 +734,86 @@ eOSState cOsdPipObject::ProcessKey(eKeys Key)
             }
             state = osContinue;
         }
+        else if (m_PipMode == pipModeReplay)
+        {
+            if (replay)
+            {
+                switch (Key & ~k_Repeat)
+                {
+                    case kOk:
+                    case kBack:
+                        state = m_InfoWindow->ProcessKey(Key);
+                        break;
+                    case k1...k9:
+                    case kRed:
+                        state = osContinue;
+                        break;
+                    case kBlue:
+                        m_PipMode = pipModeNormal;
+                        if (m_Ready && m_InfoWindow)
+                        {
+                            m_InfoWindow->SetMessage(tr("Normal mode"));
+                            m_InfoWindow->Show(replay);
+                        }
+                        state = osContinue;
+                        break;
+                    case k0:
+                        StopReplay();
+                        state = osContinue;
+                        break;
+                    case kLeft:
+                    case kRight:
+                    case kYellow:
+                    case kGreen:
+                    default:
+                        cControl::Control()->ProcessKey(Key);
+                        state = osContinue;
+                }
+                if (cControl::Control())
+                {
+                    cControl::Control()->GetIndex(pos, end);
+                    if (pPos == "")
+                    {
+                        pPos = IndexToHMSF(pos);
+                    }
+                    if (strcmp(IndexToHMSF(pos), pPos) != 0 && m_InfoWindow)
+                    {
+                        pPos = IndexToHMSF(pos);
+                        if (m_InfoWindow->Shown())
+                        {
+                            m_InfoWindow->Show(false);
+                        }
+                    }
+                }
+            } else if (m_Ready && m_InfoWindow)
+            {
+                state = m_InfoWindow->ProcessKey(Key);
+            }
+        }
         else
         {
-            if (m_Ready && m_InfoWindow)
+            if (replay)
+            {
+                switch (Key)
+                {
+                    case kBack:
+                    case k0:
+                        StopReplay();
+                        state = osContinue;
+                        break;
+                    case k1...k9:
+                    case kUp:
+                    case kChanUp:
+                    case kDown:
+                    case kChanDn:
+                    case kRed:
+                        state = osContinue;
+                    default: ;
+                }
+            } else if (m_Ready && m_InfoWindow)
+            {
                 state = m_InfoWindow->ProcessKey(Key);
+            }
         }
     }
     if (state == osUnknown)
@@ -674,7 +834,7 @@ eOSState cOsdPipObject::ProcessKey(eKeys Key)
                 if (m_Ready && m_InfoWindow)
                 {
                     m_InfoWindow->SetMessage(tr("Move mode"));
-                    m_InfoWindow->Show();
+                    m_InfoWindow->Show(true);
                 }
                 break;
             case kYellow:
@@ -682,7 +842,18 @@ eOSState cOsdPipObject::ProcessKey(eKeys Key)
                 if (m_Ready && m_InfoWindow)
                 {
                     m_InfoWindow->SetMessage(tr("Zapping mode"));
-                    m_InfoWindow->Show();
+                    m_InfoWindow->Show(true);
+                }
+                break;
+            case kBlue:
+                if (replay)
+                {
+                    m_PipMode = pipModeReplay;
+                    if (m_Ready && m_InfoWindow)
+                    {
+                        m_InfoWindow->SetMessage(tr("Replay mode"));
+                        m_InfoWindow->Show(replay);
+                    }
                 }
                 break;
             case kUp:
@@ -692,7 +863,7 @@ eOSState cOsdPipObject::ProcessKey(eKeys Key)
             case kOk:
                 if (OsdPipSetup.ShowInfo)
                 {
-                    m_InfoWindow->Show();
+                    m_InfoWindow->Show(true);
                 }
                 break;
             default:
@@ -716,6 +887,8 @@ void cOsdPipObject::ChannelSwitch(const cDevice * device, int channelNumber)
     if (OsdPipSetup.ShowInfo)
     {
         m_InfoWindow->SetChannel(Channels.GetByNumber(channelNumber));
+        if (m_PipMode == pipModeZapping)
+            m_InfoWindow->SetMessage(tr("Zapping mode"));
         m_InfoWindow->Show();
     }
 }

@@ -13,7 +13,7 @@
 #
 ### uncomment the following line, if you have a recent FFMPEG version that
 ### has a changed structure of its header files.
-#WITH_NEW_FFMPEG_HEADERS=1
+WITH_NEW_FFMPEG_HEADERS=1
 
 # The official name of this plugin.
 # This name will be used in the '-P...' option of VDR to load the plugin.
@@ -60,7 +60,7 @@ DEFINES += -D_GNU_SOURCE
 
 ### The object files (add further files here):
 
-OBJS = $(PLUGIN).o osd_info.o osd.o receiver.o setup.o i18n.o pes.o quantize.o decoder.o
+OBJS = $(PLUGIN).o osd_info.o remux.o osd.o receiver.o setup.o i18n.o pes.o quantize.o decoder.o
 
 ifdef FFMPEG_STATIC
     DEFINES += -DHAVE_FFMPEG_STATIC

@@ -10,114 +10,121 @@ msgstr ""
 "Project-Id-Version: VDR 1.5.7\n"
 "Report-Msgid-Bugs-To: <andreas.regel@powarman.de>\n"
 "POT-Creation-Date: 2008-05-03 21:57+0200\n"
-"PO-Revision-Date: 2008-04-27 18:00+0200\n"
-"Last-Translator: Sean Carlos <seanc@libero.it>\n"
-"Language-Team: <vdr@linuxtv.org>\n"
+"PO-Revision-Date: 2010-01-13 00:15+0100\n"
+"Last-Translator: Diego Pierotto <vdr-italian@tiscali.it>\n"
+"Language-Team:  <vdr@linuxtv.org>\n"
 "MIME-Version: 1.0\n"
-"Content-Type: text/plain; charset=ISO-8859-15\n"
+"Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-
-msgid "Move mode"
-msgstr ""
-
-msgid "Normal mode"
-msgstr ""
+"X-Poedit-Language: Italian\n"
+"X-Poedit-Country: ITALY\n"
+"X-Poedit-SourceCharset: utf-8\n"
 
 msgid "Zapping mode"
-msgstr ""
+msgstr "Modalità zapping"
+
+msgid "Move mode"
+msgstr "Modalità spostamento"
+
+msgid "Normal mode"
+msgstr "Modalità normale"
+
+msgid "Replay mode"
+msgstr "Modalità riproduzione"
 
 msgid "OSD Picture-in-Picture"
-msgstr ""
+msgstr "Picture-in-Picture con OSD"
 
 msgid "Picture-in-Picture"
-msgstr ""
+msgstr "Picture-in-Picture"
 
 msgid "Greyscale (16)"
-msgstr ""
+msgstr "Liv. grigio (16)"
 
 msgid "Greyscale (256)"
-msgstr ""
+msgstr "Liv. grigio (256)"
 
 msgid "Color (256, fixed)"
-msgstr ""
+msgstr "Colore (256, fisso)"
 
 msgid "Color (128, variable)"
-msgstr ""
+msgstr "Colore (128, variabile)"
 
 msgid "Color (256, dithered)"
-msgstr ""
+msgstr "Colore (256, distorto)"
 
 msgid "channel only"
-msgstr ""
+msgstr "solo canale"
 
 msgid "simple"
-msgstr ""
+msgstr "semplice"
 
 msgid "complete"
-msgstr ""
+msgstr "completa"
 
 msgid "top left"
-msgstr ""
+msgstr "in alto a sinistra"
 
 msgid "top right"
-msgstr ""
+msgstr "in alto a destra"
 
 msgid "bottom left"
-msgstr ""
+msgstr "in basso a sinistra"
 
 msgid "bottom right"
-msgstr ""
+msgstr "in basso a destra"
 
 msgid "automatic"
-msgstr ""
+msgstr "automatico"
 
 msgid "none"
-msgstr ""
+msgstr "nessuno"
 
 msgid "1 frame"
-msgstr ""
+msgstr "1 frame"
 
 msgid "2 frames"
-msgstr ""
+msgstr "2 frame"
 
 msgid "X Position"
-msgstr ""
+msgstr "Posizione X"
 
 msgid "Y Position"
-msgstr ""
+msgstr "Posizione Y"
 
 msgid "Crop left"
-msgstr ""
+msgstr "Ritaglio sinistro"
 
 msgid "Crop right"
-msgstr ""
+msgstr "Ritaglio destro"
 
 msgid "Crop at top"
-msgstr ""
+msgstr "Ritaglio superiore"
 
 msgid "Crop at bottom"
-msgstr ""
+msgstr "Ritaglio inferiore"
 
 msgid "Color depth"
-msgstr ""
+msgstr "Profondità  colore"
 
 msgid "Size"
-msgstr ""
+msgstr "Dimensione"
 
 msgid "Frames to display"
-msgstr ""
+msgstr "Frame da visualizzare"
 
 msgid "Drop frames"
-msgstr ""
+msgstr "Elimina frame"
 
 msgid "Swap FFMPEG output"
-msgstr ""
+msgstr "Cambia visualizz. FFMPEG"
 
 msgid "Show info window"
-msgstr ""
+msgstr "Mostra info finestre"
 
 msgid "Info window width"
-msgstr ""
+msgstr "Info larghezza finestra"
 
 msgid "Info window position"
-msgstr ""
+msgstr "Info posizione finestra"
+
