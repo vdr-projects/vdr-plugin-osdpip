@@ -7,6 +7,7 @@ ____-__-__: Version 0.1.0
   as community maintained project using a GIT repository
 - Committed old releases to the GIT repository
 - Updated project homepage url in README
+- Updated FSF address in the license information
 
 2010-01-01: Version 0.0.10a
 - added support for VDR 1.7.x
