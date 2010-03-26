@@ -9,6 +9,7 @@ ____-__-__: Version 0.1.0
 - Updated project homepage url in README
 - Updated FSF address in the license information
 - Added support for VDR >= 1.7.13 (Make.global)
+- Use pkg-config to find compilation flags, libs etc for ffmpeg
 
 2010-01-01: Version 0.0.10a
 - added support for VDR 1.7.x

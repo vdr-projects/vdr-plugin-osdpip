@@ -14,6 +14,8 @@
 ### has a changed structure of its header files.
 WITH_NEW_FFMPEG_HEADERS=1
 
+#FFMDIR = ../../../../ffmpeg
+
 # The official name of this plugin.
 # This name will be used in the '-P...' option of VDR to load the plugin.
 # By default the main source file also carries this name.
@@ -33,7 +35,6 @@ CXXFLAGS ?= -g -O2 -Wall -Woverloaded-virtual -Wno-parentheses
 
 ### The directory environment:
 
-FFMDIR = ../../../../ffmpeg-0.4.8
 VDRDIR = ../../..
 LIBDIR = ../../lib
 TMPDIR = /tmp
@@ -61,20 +62,25 @@ INCLUDES += -I$(VDRDIR)/include
 
 DEFINES += -D_GNU_SOURCE -DPLUGIN_NAME_I18N='"$(PLUGIN)"'
 
-INCLUDES += -I$(FFMDIR)/libavcodec
-LIBS     += -L$(FFMDIR)/libavcodec -lavcodec
+ifdef FFMDIR
+    INCLUDES += -I$(FFMDIR)/libavcodec
+    LIBS     += -L$(FFMDIR)/libavcodec -lavcodec
+    ifndef WITHOUT_SWSCALER
+        DEFINES  += -DUSE_SWSCALE
+        LIBS     += -L$(FFMDIR)/libswscale -lswscale
+    endif
+else
+    INCLUDES += $(shell pkg-config --cflags libavcodec)
+    LIBS     += $(shell pkg-config --libs   libavcodec)
+    ifndef WITHOUT_SWSCALE
+        DEFINES  += -DUSE_SWSCALE
+        INCLUDES += $(shell pkg-config --cflags libswscale)
+        LIBS     += $(shell pkg-config --libs   libswscale)
+    endif
+endif
 
 ifdef FFMPEG_STATIC
     DEFINES += -DHAVE_FFMPEG_STATIC
-endif
-
-ifndef WITHOUT_SWSCALE
-    DEFINES += -DUSE_SWSCALE
-    ifneq ($(shell which pkg-config),)
-        LIBS += $(shell pkg-config --silence-errors --libs libswscale)
-    else
-        LIBS += -lswscale
-    endif
 endif
 
 ifdef WITH_NEW_FFMPEG_HEADERS
