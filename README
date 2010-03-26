@@ -3,9 +3,10 @@ This is a "plugin" for the Video Disk Recorder (VDR).
 Written by:                  Sascha Volkenandt <sascha@akv-soft.de>
                              Andreas Regel <andreas.regel@powarman.de>
 
-Project's homepage:          http://www.magoa.net/linux/index.php?view=osdpip
+Project's old homepage:      http://linux.kompiliert.net/index.php?view=osdpip
+                             http://www.powarman.de/files/osdpip
 
-Latest version available at: http://www.powarman.de/files/osdpip
+Latest version available at: http://projects.vdr-developer.org/projects/show/plg-osdpip
 
 See the file COPYING for license information.
 
