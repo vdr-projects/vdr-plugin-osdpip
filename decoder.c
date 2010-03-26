@@ -82,14 +82,22 @@ int cDecoder::Resample(int width, int height, bool ConvertToRGB)
     context = sws_getContext(m_Context->width - (OsdPipSetup.CropLeft + OsdPipSetup.CropRight),
                              m_Context->height - (OsdPipSetup.CropTop + OsdPipSetup.CropBottom),
                              PIX_FMT_YUV420P,
+#ifdef USE_NEW_FFMPEG_HEADERS
+                             m_Width, m_Height, ConvertToRGB ? PIX_FMT_RGB32 : PIX_FMT_YUV420P,
+#else
                              m_Width, m_Height, ConvertToRGB ? PIX_FMT_RGBA32 : PIX_FMT_YUV420P,
+#endif
                              SWS_LANCZOS, NULL, NULL, NULL);
     if (!context) {
         printf("Error initializing scale context.\n");
         return -1;
     }
     avpicture_fill((AVPicture *) m_PicResample, m_BufferResample,
+#ifdef USE_NEW_FFMPEG_HEADERS
+                   ConvertToRGB ? PIX_FMT_RGB32 : PIX_FMT_YUV420P,
+#else
                    ConvertToRGB ? PIX_FMT_RGBA32 : PIX_FMT_YUV420P,
+#endif
                    m_Width, m_Height);
     sws_scale(context, pic_crop.data, pic_crop.linesize,
               0, m_Context->height - (OsdPipSetup.CropTop + OsdPipSetup.CropBottom),
@@ -121,8 +129,16 @@ int cDecoder::Resample(int width, int height, bool ConvertToRGB)
     if (ConvertToRGB)
     {
         avpicture_fill((AVPicture *) m_PicConvert, m_BufferConvert,
+#ifdef USE_NEW_FFMPEG_HEADERS
+                PIX_FMT_RGB32, m_Width, m_Height);
+#else
                 PIX_FMT_RGBA32, m_Width, m_Height);
+#endif
+#ifdef USE_NEW_FFMPEG_HEADERS
+        img_convert((AVPicture *) m_PicConvert, PIX_FMT_RGB32,
+#else
         img_convert((AVPicture *) m_PicConvert, PIX_FMT_RGBA32,
+#endif
                 (AVPicture *) m_PicResample, PIX_FMT_YUV420P,
                 m_Width, m_Height);
     }
