@@ -11,10 +11,12 @@ ____-__-__: Version 0.1.0
 - Added support for VDR >= 1.7.13 (Make.global)
 - Use pkg-config to find compilation flags, libs etc for ffmpeg
 - Fixed ffmpeg compatibility issues with newer ffmpeg versions
+- Improved copyright and license information in the header of all source files
 
 2010-01-01: Version 0.0.10a
 - added support for VDR 1.7.x
 - added PIP while replaying
+- added italian translations (thanks to Diego Pierotto)
 
 2008-05-03: Version 0.0.10 (written by Andreas Regel)
 - support swscale functions of recent FFMPEG versions. Have a look at
@@ -39,7 +41,7 @@ ____-__-__: Version 0.1.0
 - Added missing inclusion of <vdr/device.h>.
 - Added new colour reduction mode using 256 dithered colours (thanks to
   Martin Wache).
-- Added french translations (thanks to micky979)
+- Added french translations (thanks to micky979 at vdrportal.de)
 
 
 2005-05-15: Version 0.0.8 (written by Andreas Regel)

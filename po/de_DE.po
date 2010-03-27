@@ -1,16 +1,18 @@
-# VDR plugin language source file.
-# Copyright (C) 2007 Klaus Schmidinger <kls@cadsoft.de>
-# This file is distributed under the same license as the VDR package.
-# Klaus Schmidinger <kls@cadsoft.de>, 2000
+# German translations for vdr-osdpip package.
+# Copyright (C) 2004 - 2008 Sascha Volkenandt, Andreas Regel
+# This file is distributed under the same license as the vdr-osdpip package.
+# Sascha Volkenandt <sascha@akv-soft.de>, 2004.
+# Andreas Regel <andreas.regel@powarman.de>, 2004, 2005, 2008.
+# Mitchm at vdrportal.de, 2010.
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: VDR 1.5.7\n"
+"Project-Id-Version: vdr-osdpip 0.1.0\n"
 "Report-Msgid-Bugs-To: <andreas.regel@powarman.de>\n"
-"POT-Creation-Date: 2009-01-02 19:39+0100\n"
-"PO-Revision-Date: 2008-04-27 18:00+0200\n"
-"Last-Translator: Klaus Schmidinger <kls@cadsoft.de>\n"
-"Language-Team: <vdr@linuxtv.org>\n"
+"POT-Creation-Date: 2010-03-27 14:40+0100\n"
+"PO-Revision-Date: 2010-01-01 22:29+0100\n"
+"Last-Translator: Mitchm at vdrportal.de\n"
+"Language-Team:  <vdr@linuxtv.org>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=ISO-8859-15\n"
 "Content-Transfer-Encoding: 8bit\n"

@@ -1,10 +1,32 @@
 /*
- * remux.h: A streaming MPEG2 remultiplexer
+ * OSD Picture in Picture plugin for the Video Disk Recorder
  *
- * See the main source file 'vdr.c' for copyright information and
- * how to reach the author.
+ * Copyright (C) 2010        Mitchm at vdrportal.de
+ * Copyright (C) 2005 - 2007 Reinhard Nissl <rnissl@gmx.de>
+ * Copyright (C) 2001 - 2008 Klaus Schmidinger <Klaus.Schmidinger@tvdr.de>
  *
- * $Id: remux.h 1.17 2007/09/02 10:19:06 kls Exp $
+ * remux.h: A streaming MPEG2 remultiplexer (taken from VDR-1.6.0)
+ *
+ * The parts of this code that implement cTS2PES have been taken from
+ * the Linux DVB driver's 'tuxplayer' example and were rewritten to suit
+ * VDR's needs.
+ *
+ * The cRepacker family's code was originally written by Reinhard Nissl <rnissl@gmx.de>,
+ * and adapted to the VDR coding style by Klaus.Schmidinger@tvdr.de.
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License along
+ * with this program; if not, write to the Free Software Foundation, Inc.,
+ * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
 #ifndef __REMUX_PIP_H
