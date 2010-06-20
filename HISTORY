@@ -1,6 +1,10 @@
 VDR Plugin 'osdpip' Revision History
 ------------------------------------
 
+____-__-__: Version 0.1.1
+
+- Fixed compile error with newer ffmpeg versions >= svn 20100426 (closes #345)
+
 2010-03-28: Version 0.1.0
 
 - Moved to http://projects.vdr-developer.org/projects/show/plg-osdpip
