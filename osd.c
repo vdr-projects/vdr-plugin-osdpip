@@ -625,7 +625,7 @@ void cOsdPipObject::StopReplay(void)
 {
     cControl::Control()->ProcessKey(kStop);
     cDevice::PrimaryDevice()->StopReplay();
-    if (m_InfoWindow->Shown())
+    if (m_InfoWindow && m_InfoWindow->Shown())
         m_InfoWindow->Hide();
     Channels.SwitchTo(cDevice::CurrentChannel());
 }
