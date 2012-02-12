@@ -70,7 +70,13 @@ int cDecoder::Decode(unsigned char * data, int length)
 {
     int gotPicture, len;
 
-    len = avcodec_decode_video(m_Context, m_PicDecoded, &gotPicture, data, length);
+    AVPacket avpkt;
+    av_init_packet(&avpkt);
+    avpkt.data = (uint8_t *)data;
+    avpkt.size = length;
+    avpkt.flags = AV_PKT_FLAG_KEY;
+
+    len = avcodec_decode_video2(m_Context, m_PicDecoded, &gotPicture, &avpkt);
     if (len < 0)
     {
         printf("Error while decoding frame\n");
@@ -94,6 +100,30 @@ int cDecoder::Resample(int width, int height, bool ConvertToRGB)
     struct SwsContext * context;
 
     av_picture_crop(&pic_crop, (AVPicture *) m_PicDecoded, PIX_FMT_YUV420P, OsdPipSetup.CropTop, OsdPipSetup.CropLeft);
+#ifdef FF_API_SWS_GETCONTEXT
+    if (!(context = sws_alloc_context())) {
+        printf("Error initializing scale context.\n");
+        return -1;
+    }
+
+    av_set_int(context, "srcw", m_Context->width - (OsdPipSetup.CropLeft + OsdPipSetup.CropRight));
+    av_set_int(context, "srch", m_Context->height - (OsdPipSetup.CropTop + OsdPipSetup.CropBottom));
+    av_set_int(context, "src_format", PIX_FMT_YUV420P);
+    av_set_int(context, "dstw", m_Width);
+    av_set_int(context, "dsth", m_Height);
+#ifdef USE_NEW_FFMPEG_HEADERS
+    av_set_int(context, "dst_format", ConvertToRGB ? PIX_FMT_RGB32 : PIX_FMT_YUV420P);
+#else
+    av_set_int(context, "dst_format", ConvertToRGB ? PIX_FMT_RGBA32 : PIX_FMT_YUV420P);
+#endif
+    av_set_int(context, "sws_flags", SWS_LANCZOS);
+
+    if (sws_init_context(context, NULL, NULL) < 0) {
+        printf("Error initializing conversion context.\n");
+        sws_freeContext(context);
+        return -1;
+    }
+#else
     context = sws_getContext(m_Context->width - (OsdPipSetup.CropLeft + OsdPipSetup.CropRight),
                              m_Context->height - (OsdPipSetup.CropTop + OsdPipSetup.CropBottom),
                              PIX_FMT_YUV420P,
@@ -107,6 +137,7 @@ int cDecoder::Resample(int width, int height, bool ConvertToRGB)
         printf("Error initializing scale context.\n");
         return -1;
     }
+#endif
     avpicture_fill((AVPicture *) m_PicResample, m_BufferResample,
 #ifdef USE_NEW_FFMPEG_HEADERS
                    ConvertToRGB ? PIX_FMT_RGB32 : PIX_FMT_YUV420P,

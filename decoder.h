@@ -28,16 +28,19 @@ extern "C"
   #include <avcodec.h>
   #ifdef USE_SWSCALE
     #include <swscale.h>
+    #include <opt.h>
   #endif
 #elif defined USE_NEW_FFMPEG_HEADERS
   #include <libavcodec/avcodec.h>
   #ifdef USE_SWSCALE
     #include <libswscale/swscale.h>
+    #include <libavcodec/opt.h>
   #endif
 #else
   #include <ffmpeg/avcodec.h>
   #ifdef USE_SWSCALE
     #include <ffmpeg/swscale.h>
+    #include <ffmpeg/opt.h>
   #endif
 #endif
 }
