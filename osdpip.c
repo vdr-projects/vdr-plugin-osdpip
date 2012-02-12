@@ -29,7 +29,7 @@
 
 #include <vdr/plugin.h>
 
-static const char *VERSION        = "0.1.0";
+static const char *VERSION        = "0.1.1";
 static const char *DESCRIPTION    = trNOOP("OSD Picture-in-Picture");
 static const char *MAINMENUENTRY  = trNOOP("Picture-in-Picture");
 
