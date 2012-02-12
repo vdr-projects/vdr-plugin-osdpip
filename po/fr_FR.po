@@ -16,37 +16,37 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 
 msgid "Zapping mode"
-msgstr ""
+msgstr "Mode zapping"
 
 msgid "Move mode"
 msgstr "Mode mouvement"
 
 msgid "Normal mode"
-msgstr "Mode normale"
+msgstr "Mode normal"
 
 msgid "Replay mode"
-msgstr ""
+msgstr "Mode relecture"
 
 msgid "OSD Picture-in-Picture"
 msgstr "OSD-PIP Incrustation d'image dans l'image"
 
 msgid "Picture-in-Picture"
-msgstr "Incrustation d'image"
+msgstr "Image dans l'image"
 
 msgid "Greyscale (16)"
-msgstr "Niveau de gris (16)"
+msgstr "Niveaux de gris (16)"
 
 msgid "Greyscale (256)"
-msgstr "Niveau de gris (256)"
+msgstr "Niveaux de gris (256)"
 
 msgid "Color (256, fixed)"
-msgstr "Couleur (256 fixe)"
+msgstr "Couleurs (256 fixes)"
 
 msgid "Color (128, variable)"
-msgstr "Couleur (128 variable)"
+msgstr "Couleurs (128 variables)"
 
 msgid "Color (256, dithered)"
-msgstr ""
+msgstr "Couleurs (256 trames)"
 
 msgid "channel only"
 msgstr "Seulement la chaine"
@@ -58,16 +58,16 @@ msgid "complete"
 msgstr "Complet"
 
 msgid "top left"
-msgstr "En haut a gauche"
+msgstr "En haut à gauche"
 
 msgid "top right"
-msgstr "En haut a droite"
+msgstr "En haut à droite"
 
 msgid "bottom left"
-msgstr "En bas a gauche"
+msgstr "En bas à gauche"
 
 msgid "bottom right"
-msgstr "En bas a droite"
+msgstr "En bas à droite"
 
 msgid "automatic"
 msgstr "Automatique"
@@ -76,22 +76,22 @@ msgid "none"
 msgstr "Aucun"
 
 msgid "1 frame"
-msgstr "Sequence 1"
+msgstr "Séquence 1"
 
 msgid "2 frames"
-msgstr "Sequence 2"
+msgstr "Séquence 2"
 
 msgid "X Position"
-msgstr "X Position"
+msgstr "Position X"
 
 msgid "Y Position"
-msgstr "Y Position"
+msgstr "Position Y"
 
 msgid "Crop left"
-msgstr "Couper a gauche"
+msgstr "Couper à gauche"
 
 msgid "Crop right"
-msgstr "Couper a droite"
+msgstr "Couper à droite"
 
 msgid "Crop at top"
 msgstr "Couper la partie haute"
@@ -100,25 +100,25 @@ msgid "Crop at bottom"
 msgstr "Couper la partie basse"
 
 msgid "Color depth"
-msgstr "Nobre de couleur pour l'image"
+msgstr "Nombre de couleurs"
 
 msgid "Size"
 msgstr "Taille"
 
 msgid "Frames to display"
-msgstr "Sequence a afficher"
+msgstr "Séquence à afficher"
 
 msgid "Drop frames"
-msgstr "Sauter des sequences"
+msgstr "Sauter des séquences"
 
 msgid "Swap FFMPEG output"
 msgstr "Changer la sortie de FFMPEG"
 
 msgid "Show info window"
-msgstr "Montrer les informations de la fenetre"
+msgstr "Afficher les info de la fenêtre"
 
 msgid "Info window width"
-msgstr "Information sur la taille de la fenetre"
+msgstr "Info sur taille de la fenêtre"
 
 msgid "Info window position"
-msgstr "Information sur la position de la fenetre"
+msgstr "Info sur position de la fenêtre"
