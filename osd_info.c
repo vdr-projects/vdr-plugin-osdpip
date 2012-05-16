@@ -21,7 +21,6 @@
 
 #include "osd_info.h"
 #include "setup.h"
-#include "i18n.h"
 
 #include <vdr/device.h>
 #include <vdr/thread.h>

@@ -23,13 +23,10 @@
 #include "decoder.h"
 #include "osd.h"
 #include "setup.h"
-#if (APIVERSNUM < 10507)
-#include "i18n.h"
-#endif
 
 #include <vdr/plugin.h>
 
-static const char *VERSION        = "0.1.1";
+static const char *VERSION        = "0.1.2";
 static const char *DESCRIPTION    = trNOOP("OSD Picture-in-Picture");
 static const char *MAINMENUENTRY  = trNOOP("Picture-in-Picture");
 
@@ -83,9 +80,6 @@ bool cPluginOsdpip::Initialize(void)
 
 bool cPluginOsdpip::Start(void)
 {
-#if (APIVERSNUM < 10507)
-    RegisterI18n(Phrases);
-#endif
     return true;
 }
 
@@ -101,11 +95,7 @@ cOsdObject *cPluginOsdpip::MainMenuAction(void)
     chan = cDevice::CurrentChannel() != 0 
         ? Channels.GetByNumber(cDevice::CurrentChannel()) : NULL;
     if (chan != NULL) {
-#if (APIVERSNUM < 10500)
-        dev = cDevice::GetDevice(chan, 1);
-#else
         dev = cDevice::GetDevice(chan, 1, false);
-#endif
         if (dev)
             return new cOsdPipObject(dev, chan);
     }

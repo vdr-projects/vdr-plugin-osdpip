@@ -21,7 +21,6 @@
 #include <vdr/config.h>
 
 #include "setup.h"
-#include "i18n.h"
 
 const int kColorDepths = 5;
 const int kSizes = 11;

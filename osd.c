@@ -29,14 +29,9 @@
 #include "quantize.h"
 #include "receiver.h"
 #include "setup.h"
-#if VDRVERSNUM > 10703
 #include "remux.h"
-#endif
 
 #include <vdr/ringbuffer.h>
-#if VDRVERSNUM <= 10703
-#include <vdr/remux.h>
-#endif
 #include <vdr/thread.h>
 
 #include <vdr/menu.h>
@@ -99,11 +94,7 @@ void cOsdPipObject::SwapChannels(void)
     if (chan) {
         Stop();
         Channels.SwitchTo(m_Channel->Number());
-#if (APIVERSNUM < 10500)
-        cDevice *dev = cDevice::GetDevice(chan, 1);
-#else
         cDevice *dev = cDevice::GetDevice(chan, 1, false);
-#endif
         if (dev) {
             DELETENULL(m_Receiver);
             m_Channel = chan;
@@ -123,11 +114,7 @@ void cOsdPipObject::SwitchOsdPipChan(int i)
     {
         Stop();
         DELETENULL(m_Receiver);
-#if (APIVERSNUM < 10500)
-        cDevice *dev = cDevice::GetDevice(pipChan, 1);
-#else
         cDevice *dev = cDevice::GetDevice(pipChan, 1, false);
-#endif
         if (dev)
         {
             m_Channel = pipChan;
@@ -890,9 +877,9 @@ eOSState cOsdPipObject::ProcessKey(eKeys Key)
     return state;
 }
 
-void cOsdPipObject::ChannelSwitch(const cDevice * device, int channelNumber)
+void cOsdPipObject::ChannelSwitch(const cDevice * device, int channelNumber, bool LiveView)
 {
-    if (device != cDevice::PrimaryDevice())
+    if (!LiveView)
         return;
     if (channelNumber == 0)
         return;

@@ -76,7 +76,7 @@ private:
     void StopReplay();
 protected:
     virtual void Action(void);
-    virtual void ChannelSwitch(const cDevice * device, int channelNumber);
+    virtual void ChannelSwitch(const cDevice * device, int channelNumber, bool LiveView);
     virtual void OsdStatusMessage(const char * message);
 
 public:

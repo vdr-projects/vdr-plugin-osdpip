@@ -28,21 +28,13 @@
 
 class cRingBufferLinear;
 class cRingBufferFrame;
-#if VDRVERSNUM > 10703
 class cRemuxPIP;
-#else
-class cRemux;
-#endif
 
 class cOsdPipReceiver: public cReceiver, public cThread {
 private:
     cRingBufferLinear *m_TSBuffer;
     cRingBufferFrame *m_ESBuffer;
-#if VDRVERSNUM > 10703
     cRemuxPIP *m_Remux;
-#else
-    cRemux *m_Remux;
-#endif
 
     bool m_Active;
 

@@ -107,7 +107,7 @@ endif
 
 ### The object files (add further files here):
 
-OBJS = $(PLUGIN).o osd_info.o remux.o osd.o receiver.o setup.o i18n.o pes.o quantize.o decoder.o
+OBJS = $(PLUGIN).o osd_info.o remux.o osd.o receiver.o setup.o pes.o quantize.o decoder.o
 
 ### The main target:
 
