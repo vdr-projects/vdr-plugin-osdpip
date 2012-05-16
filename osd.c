@@ -215,6 +215,11 @@ void cOsdPipObject::ProcessImage(unsigned char * data, int length)
             case 8: m_Width = 260; m_Height = 208; break;
             case 9: m_Width = 280; m_Height = 224; break;
             case 10: m_Width = 300; m_Height = 240; break;
+            case 11: m_Width = 450; m_Height = 360; break;
+            case 12: m_Width = 600; m_Height = 480; break;
+            case 13: m_Width = 320; m_Height = 180; break;
+            case 14: m_Width = 480; m_Height = 270; break;
+            case 15: m_Width = 640; m_Height = 360; break;
         }
         if (OsdPipSetup.ShowInfo > 0)
         {

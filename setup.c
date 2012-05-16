@@ -23,7 +23,7 @@
 #include "setup.h"
 
 const int kColorDepths = 5;
-const int kSizes = 11;
+const int kSizes = 16;
 const int kFrameModes = 3;
 const int kFrameDrops = 4;
 const int kShowInfoTypes = 4;
@@ -46,6 +46,11 @@ const char * SizeItems[] = {
     "260x208",
     "280x224",
     "300x240",
+    "450x360",
+    "600x480",
+    "320x180",
+    "480x270",
+    "640x360",
     NULL
 };
 
